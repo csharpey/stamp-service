@@ -1,0 +1,35 @@
+{{- if .Values.ingress.enabled }}
+{{- $fullName := include "chart.fullname" . -}}
+{{- $svcPort := .Values.service.port -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 200m
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: {{ 900 | quote }}
+    nginx.ingress.kubernetes.io/proxy-send-timeout: {{ 900 | quote}}
+    nginx.ingress.kubernetes.io/proxy-read-timeout: {{ 900 | quote}}
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: {{ 900 | quote}}
+
+spec:
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          {{- with .path }}
+          - path: {{ .address }}
+            pathType: {{ .pathType }}
+          {{- end }}
+            backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $svcPort }}
+          {{- end }}
+    {{- end }}
+{{- end }}

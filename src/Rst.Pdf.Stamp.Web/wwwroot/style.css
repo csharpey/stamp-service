@@ -1,0 +1,32 @@
+
+table {
+
+}
+
+.header__emblem {
+    -premailer-width: 20px;
+    -premailer-height: 18px;
+}
+
+.header__title {
+    color: #101E7D;
+    font-size: 4px;
+    text-align: center;
+}
+
+.stamp__data {
+    font-weight: bold;
+    font-size: 2px;
+}
+
+.stamp__data span {
+    font-weight: normal;
+}
+
+.data__title {
+    text-align: center;
+    color: #FFFFFF;
+    font-size: 3px;
+
+    -premailer-bgcolor: #101E7D;
+}

@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <NoWarn>$(NoWarn);1591</NoWarn>
+        <Version>1.0.0</Version>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="2.5.1" />
+        <PackageReference Include="Rst.Handlers" Version="0.0.1" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="6.0.2" />
+        <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AWSSDK.S3" Version="3.7.9.34" />
+        <PackageReference Include="System.Linq.Async" Version="5.1.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Rst.Pdf.Stamp\Rst.Pdf.Stamp.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Filters" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="Views\Stamp.cshtml" />
+        <None Include="wwwroot\Roboto-Regular.ttf" />
+        <None Include="wwwroot\style.css" />
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Update="Stamp.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Stamp.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="Stamp.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Stamp.resx</DependentUpon>
+        </Compile>
+    </ItemGroup>
+</Project>

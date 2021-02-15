@@ -1,0 +1,68 @@
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Rst.Pdf.Stamp.Web
+
+@model Rst.Pdf.Stamp.SignatureInfo
+
+@inject IHtmlLocalizer<Stamp> _localizer
+@inject IWebHostEnvironment _environment
+  
+@{
+    var styles = new List<string>
+    {
+      "style.css", 
+    };
+}
+
+<style>
+@foreach(var path in styles)
+{
+    var abs = System.IO.Path.Combine(_environment.WebRootPath, path);
+    @Html.Raw(await System.IO.File.ReadAllTextAsync(abs))
+}
+</style>
+
+<table>
+    <tr>
+        <td colspan="3">
+            <p class="header__title">@Stamp.Title.ToUpper()</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" class="data__title">
+            <p>@Stamp.Summary.ToUpper()</p>
+        </td>
+    </tr>
+    <tr>
+        <td class="stamp__data">
+            <p>@Stamp.Certificate:</p>
+        </td>
+        <td class="stamp__data" colspan="2">
+            <p><span>@Model.CertificateSerialNumber</span></p>
+        </td>
+    </tr>
+    <tr>
+        <td class="stamp__data">
+            <p>@Stamp.Organization:</p>
+        </td>
+        <td class="stamp__data" colspan="2">
+            <p><span>@Model.Name</span></p>
+        </td>
+    </tr>
+    <tr>
+        <td class="stamp__data">
+            <p>@Stamp.Owner:</p>
+        </td>
+        <td class="stamp__data" colspan="2">
+            <p><span>@Model.FullNameSubject</span></p>
+        </td>
+    </tr>
+    <tr>
+        <td class="stamp__data">
+            <p>@Stamp.Period:</p>
+        </td>
+        <td class="stamp__data" colspan="2">
+            <p><span>@string.Format(Stamp.PeriodFormat, Model.StartDateCertificate, Model.EndDateCertificate)</span></p>
+        </td>
+    </tr>
+</table>
