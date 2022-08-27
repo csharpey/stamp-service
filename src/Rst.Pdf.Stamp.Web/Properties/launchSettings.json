@@ -5,8 +5,8 @@
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": false,
-      "launchUrl": "swagger",
-      "applicationUrl": "http://0.0.0.0:5005",
+      "launchUrl": "swagger/index.html",
+      "applicationUrl": "http://0.0.0.0:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -15,8 +15,8 @@
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": false,
-      "launchUrl": "swagger",
-      "applicationUrl": "http://0.0.0.0:5005",
+      "launchUrl": "swaggerswagger/index.html",
+      "applicationUrl": "http://0.0.0.0:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production"
       }

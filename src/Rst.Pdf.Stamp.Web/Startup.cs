@@ -50,12 +50,12 @@ namespace Rst.Pdf.Stamp.Web
 
             services.AddSwaggerGen(opts =>
             {
-                opts.SwaggerDoc("Rst.Pdf.Stamp",
+                opts.SwaggerDoc("v1",
                     new OpenApiInfo
                     {
                         Title = "Pdf stamping service",
                         Version = version.ToString(),
-                        Description = string.Empty
+                        Description = string.Empty,
                     });
 
                 var xmlCommentsFullPath = Path.Combine(
@@ -109,18 +109,17 @@ namespace Rst.Pdf.Stamp.Web
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
             }
 
-            app.UseSwaggerUI(opts =>
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
             {
-                opts.SwaggerEndpoint("/swagger.json", "Rst Stamp Service");
-
-                opts.DefaultModelExpandDepth(3);
-                opts.DocExpansion(DocExpansion.None);
-                opts.DefaultModelRendering(ModelRendering.Example);
-                opts.EnableDeepLinking();
-                opts.DisplayOperationId();
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+                options.DefaultModelExpandDepth(3);
+                options.DocExpansion(DocExpansion.None);
+                options.DefaultModelRendering(ModelRendering.Example);
+                options.EnableDeepLinking();
+                options.DisplayOperationId();
             });
 
             var supportedCultures = new[] {"ru", "en"}

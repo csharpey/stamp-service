@@ -6,11 +6,11 @@ COPY . .
 
 RUN dotnet restore
 
-WORKDIR /app/src/WebApplication
+WORKDIR /app/src/Rst.Pdf.Stamp.Web
 
 RUN dotnet publish -c Release -o /app/publish
 
 FROM dotnet/aspnet:6.0
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "./Rst.Pdf.Stamp.dll"]
+ENTRYPOINT ["dotnet", "./Rst.Pdf.Stamp.Web.dll"]
