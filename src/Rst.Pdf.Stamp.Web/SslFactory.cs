@@ -13,7 +13,6 @@ namespace Rst.Pdf.Stamp.Web
                 httpMessageHandler.MaxConnectionsPerServer = clientConfig.MaxConnectionsPerServer.Value;
             httpMessageHandler.AllowAutoRedirect = clientConfig.AllowAutoRedirect;
 
-            // Disable automatic decompression when Content-Encoding header is present
             httpMessageHandler.AutomaticDecompression = DecompressionMethods.None;
 
             var proxy = clientConfig.GetWebProxy();
@@ -30,8 +29,6 @@ namespace Rst.Pdf.Stamp.Web
 
             if (clientConfig.Timeout.HasValue)
             {
-                // Timeout value is set to ClientConfig.MaxTimeout for S3 and Glacier.
-                // Use default value (100 seconds) for other services.
                 httpClient.Timeout = clientConfig.Timeout.Value;
             }
             return httpClient;

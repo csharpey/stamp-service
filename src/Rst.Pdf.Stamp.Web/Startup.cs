@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement.Mvc;
 using Microsoft.OpenApi.Models;
 using Rst.Pdf.Stamp.Web.Extensions;
 using Rst.Pdf.Stamp.Web.Interfaces;
@@ -47,23 +48,34 @@ namespace Rst.Pdf.Stamp.Web
                     options.Conventions.Add(new RouteTokenTransformerConvention(new ParameterTransformer()));
                 })
                 .AddViewLocalization();
-
+            services.AddVersionedApiExplorer(setup =>
+            {
+                setup.GroupNameFormat = "'v'VVV";
+                setup.SubstituteApiVersionInUrl = true;
+            });
             services.AddSwaggerGen(opts =>
             {
-                opts.SwaggerDoc("v1",
-                    new OpenApiInfo
-                    {
-                        Title = "Pdf stamping service",
-                        Version = version.ToString(),
-                        Description = string.Empty,
-                    });
+                var info = new OpenApiInfo
+                {
+                    Title = "Pdf stamping service",
+                    Version = version.ToString(),
+                    Description = string.Empty,
+                    Contact = new OpenApiContact { Name = "Nikita Kupreenkov", Email = "kupnsaloxa@gmail.com" },
+                    License = new OpenApiLicense { Name = "MIT" },
+                };
+                opts.SwaggerDoc("v1", info);
+                opts.SwaggerDoc("v2", info);
 
                 var xmlCommentsFullPath = Path.Combine(
                     AppContext.BaseDirectory,
                     string.Join('.', assembly.GetName().Name, "xml"));
                 opts.IncludeXmlComments(xmlCommentsFullPath);
             });
-
+            services.AddApiVersioning(options =>
+            {
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.ReportApiVersions = true;
+            });
             services.Configure<BucketOptions>(options =>
             {
                 options.Public = "public-bucket";
@@ -81,23 +93,23 @@ namespace Rst.Pdf.Stamp.Web
             services.AddScoped<ISignatureService, SignatureService>();
             services.AddScoped<IContentTypeProvider, FileExtensionContentTypeProvider>();
 
-            services.Configure<SertOptions>(Configuration.GetSection(SertOptions.Section));
             services.AddHttpContextAccessor();
             services.AddRazorPages();
             services.AddScoped<ITemplateService, TemplateService>();
             services.AddScoped<ITemplateFactory, TemplateFactory>();
             services.AddScoped<IPdfGenerator, PdfGenerator>();
+            services.AddScoped<IPlaceManager, PlaceManager>();
 
             services.AddHealthChecks()
                 .AddRedis(Configuration.GetConnectionString("Redis"))
                 .AddS3(options =>
                 {
-                    options.AccessKey = Configuration["ObjectStorage:AccessKey"];
-                    options.BucketName = "bucket";
-                    options.SecretKey = Configuration["ObjectStorage:SecretKey"];
+                    options.AccessKey = Configuration["S3:AccessKey"];
+                    options.BucketName = "default";
+                    options.SecretKey = Configuration["S3:SecretKey"];
                     options.S3Config = new AmazonS3Config
                     {
-                        ServiceURL = Configuration["ObjectStorage:ServiceUrl"],
+                        ServiceURL = Configuration.GetConnectionString(FileStorageOptions.Section),
                         ForcePathStyle = true,
                         HttpClientFactory = new SslFactory()
                     };
@@ -115,6 +127,7 @@ namespace Rst.Pdf.Stamp.Web
             app.UseSwaggerUI(options =>
             {
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+                options.SwaggerEndpoint("/swagger/v2/swagger.json", "v2");
                 options.DefaultModelExpandDepth(3);
                 options.DocExpansion(DocExpansion.None);
                 options.DefaultModelRendering(ModelRendering.Example);
@@ -122,7 +135,7 @@ namespace Rst.Pdf.Stamp.Web
                 options.DisplayOperationId();
             });
 
-            var supportedCultures = new[] {"ru", "en"}
+            var supportedCultures = new[] { "ru", "en" }
                 .Select(c => new CultureInfo(c)).ToList();
 
             app.UseRequestLocalization(new RequestLocalizationOptions

@@ -20,16 +20,14 @@ namespace Rst.Pdf.Stamp.Web
         private readonly ITempDataProvider _tempDataProvider;
         private readonly IHttpContextAccessor _accessor;
         private readonly ITemplateFactory _templateFactory;
-        private readonly SertOptions _sertOptions;
 
         public TemplateService(
-            ITempDataProvider tempDataProvider, 
-            IHttpContextAccessor accessor, ITemplateFactory templateFactory, IOptions<SertOptions> options)
+            ITempDataProvider tempDataProvider,
+            IHttpContextAccessor accessor, ITemplateFactory templateFactory)
         {
             _tempDataProvider = tempDataProvider;
             _accessor = accessor;
             _templateFactory = templateFactory;
-            _sertOptions = options.Value;
         }
 
         public async Task<string> RenderToString(IView view, object model)
@@ -61,14 +59,7 @@ namespace Rst.Pdf.Stamp.Web
         {
             IView view;
 
-            if (_sertOptions.OGRNS.Contains(model.OGRN))
-            {
-                view = _templateFactory.FirstOrDefault(x=>x.Path.Contains("Operator"));
-            }
-            else
-            {
-                view = _templateFactory.FirstOrDefault(x=>x.Path.Contains("Declarant"));
-            }
+            view =  _templateFactory.FirstOrDefault(x => x.Path.Contains("Stamp"));
 
             var actionContext = new ActionContext(_accessor.HttpContext, new RouteData(), new ActionDescriptor());
 

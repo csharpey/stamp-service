@@ -15,13 +15,15 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement.Mvc;
 using Rst.Pdf.Stamp.Web.Interfaces;
 using Rst.Pdf.Stamp.Web.Options;
 
 namespace Rst.Pdf.Stamp.Web.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/[controller]")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public class StampsController : ControllerBase
@@ -52,6 +54,7 @@ namespace Rst.Pdf.Stamp.Web.Controllers
             _options = options.Value;
         }
 
+        [FeatureGate(FeatureFlags.S3)]
         [HttpPost("[action]")]
         public async Task<IActionResult> Refs([FromBody] FileRef args, CancellationToken token)
         {
@@ -139,7 +142,7 @@ namespace Rst.Pdf.Stamp.Web.Controllers
             var signatures = await _signature.Info(args)
                 .ContinueWith(t => t.Result.ToImmutableList(), token);
 
-            _logger.LogInformation("Process {0} with size {1}", f.FileName, f.Length);
+            _logger.LogInformation("Process {FileName} with size {Length}", f.FileName, f.Length);
 
             var newFileName = Path.ChangeExtension(f.FileName, "pdf");
 
@@ -149,6 +152,8 @@ namespace Rst.Pdf.Stamp.Web.Controllers
             return File(stream, contentType, newFileName);
         }
 
+        
+        [FeatureGate(FeatureFlags.S3)]
         [HttpPost("[action]")]
         public async Task<IActionResult> Files([FromForm] StampArgs args, CancellationToken token)
         {
@@ -164,7 +169,7 @@ namespace Rst.Pdf.Stamp.Web.Controllers
 
             foreach (var f in args.Files)
             {
-                _logger.LogInformation("Process {0} with size {1}", f.FileName, f.Length);
+                _logger.LogInformation("Process {FileName} with size {Length}", f.FileName, f.Length);
 
                 var newFileName = Path.ChangeExtension(f.FileName, "pdf");
 

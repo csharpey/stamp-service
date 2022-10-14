@@ -27,7 +27,7 @@ namespace Rst.Pdf.Stamp.Web {
         internal static System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.Equals(null, resourceMan)) {
-                    System.Resources.ResourceManager temp = new System.Resources.ResourceManager("WebApplication.Stamp", typeof(Stamp).Assembly);
+                    System.Resources.ResourceManager temp = new System.Resources.ResourceManager("Rst.Pdf.Stamp.Web.Stamp", typeof(Stamp).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

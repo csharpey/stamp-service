@@ -19,7 +19,7 @@ namespace Rst.Pdf.Stamp.Web.Extensions
                     var options = provider.GetRequiredService<IOptions<FileStorageOptions>>();
                     var config = new AmazonS3Config
                     {
-                        ServiceURL = options.Value.ServiceUrl,
+                        ServiceURL = configuration.GetConnectionString(FileStorageOptions.Section),
                         ForcePathStyle = true,
                         HttpClientFactory = new SslFactory()
                     };

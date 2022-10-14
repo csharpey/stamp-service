@@ -5,24 +5,32 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
-      <PackageReference Include="Microsoft.FeatureManagement" Version="2.5.1" />
-      <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
-      <PackageReference Include="System.Security.Cryptography.Pkcs" Version="6.0.1" />
-      <PackageReference Include="AWSSDK.S3" Version="3.7.9.34" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-      <PackageReference Include="iTextSharp-LGPL" Version="4.1.6">
-       <NoWarn>NU1701</NoWarn>
-      </PackageReference>
-      <PackageReference Include="PreMailer.Net" Version="2.4.0" />
+        <PackageReference Include="BitMiracle.Docotic.Pdf" Version="8.7.13816-dev" />
+        <PackageReference Include="Emgu.CV" Version="4.5.5.4823" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+        <PackageReference Include="Microsoft.FeatureManagement" Version="2.5.1" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+        <PackageReference Include="System.Security.Cryptography.Pkcs" Version="6.0.1" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="AWSSDK.S3" Version="3.7.9.34" />
+        <PackageReference Include="iTextSharp-LGPL" Version="4.1.6">
+            <NoWarn>NU1701</NoWarn>
+        </PackageReference>
+        <PackageReference Include="PreMailer.Net" Version="2.4.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Extensions" />
+        <Folder Include="Extensions" />
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="Extensions\HtmlHelperExtensions.cs" />
+        <Compile Remove="Extensions\HtmlHelperExtensions.cs" />
     </ItemGroup>
 
 </Project>

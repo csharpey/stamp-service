@@ -16,15 +16,18 @@ namespace Rst.Pdf.Stamp
     public class StampService : IStampService
     {
         private readonly IPdfGenerator _pdf;
+        private readonly IPlaceManager _placeManager;
         private readonly ITemplateService _renderer;
 
         private readonly IFeatureManager _featureManager;
 
-        public StampService(ITemplateService renderer, IPdfGenerator pdf, IFeatureManager featureManager)
+        public StampService(ITemplateService renderer, IPdfGenerator pdf, IFeatureManager featureManager,
+            IPlaceManager placeManager)
         {
             _renderer = renderer;
             _pdf = pdf;
             _featureManager = featureManager;
+            _placeManager = placeManager;
         }
 
         public async Task<Stream> AddStamp(Stream input, IReadOnlyCollection<SignatureInfo> signatures, IView? template)
@@ -39,10 +42,15 @@ namespace Rst.Pdf.Stamp
             for (var i = 0; i < signatures.Count; i++)
             {
                 var signature = signatures.ElementAt(i);
-                string symbol = template == null ? await _renderer.RenderToString(signature) : await _renderer.RenderToString(template, signature);
+                string symbol = template == null
+                    ? await _renderer.RenderToString(signature)
+                    : await _renderer.RenderToString(template, signature);
                 html.Add(HttpUtility.HtmlDecode(symbol));
             }
-            var pdfReader = new PdfReader(_pdf.FromHtml(html));
+
+            var pdfStream = _pdf.FromHtml(html);
+            var fsm = _placeManager.FindNotOccupied(pdfStream);
+            var pdfReader = new PdfReader(pdfStream);
             var size = document.PageSize;
             for (var x = reader.NumberOfPages; x > 0; x--)
             {
@@ -51,13 +59,13 @@ namespace Rst.Pdf.Stamp
 
                 for (int i = 0; i < pdfReader.NumberOfPages; i++)
                 {
-                    var page = stamper.GetImportedPage(pdfReader, i+1);
-                    var stampSize = pdfReader.GetPageSize(i+1);
-                    
+                    var page = stamper.GetImportedPage(pdfReader, i + 1);
+                    var stampSize = pdfReader.GetPageSize(i + 1);
+
                     content.AddTemplate(
                         page, 0, -1, 1, 0,
-                        size.GetRight(stampSize.Height)-5,
-                        size.GetBottom(stampSize.Width)+indent+5);
+                        size.GetRight(stampSize.Height) - 5,
+                        size.GetBottom(stampSize.Width) + indent + 5);
 
                     indent += stampSize.Width + 5;
                 }
@@ -67,6 +75,7 @@ namespace Rst.Pdf.Stamp
                     break;
                 }
             }
+
             stamper.Close();
 
             return new MemoryStream(stream.ToArray());
