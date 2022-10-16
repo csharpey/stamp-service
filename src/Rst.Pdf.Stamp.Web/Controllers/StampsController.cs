@@ -58,11 +58,6 @@ namespace Rst.Pdf.Stamp.Web.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> Refs([FromBody] FileRef args, CancellationToken token)
         {
-            if (!TryValidateModel(args))
-            {
-                return BadRequest(ModelState);
-            }
-
             var template = _templateFactory.Template();
 
             var signatures = await _signature.Info(args)
@@ -133,11 +128,6 @@ namespace Rst.Pdf.Stamp.Web.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> Previews([FromForm] PreviewArgs args, CancellationToken token)
         {
-            if (!TryValidateModel(args))
-            {
-                return BadRequest(ModelState);
-            }
-
             var f = args.File;
             var signatures = await _signature.Info(args)
                 .ContinueWith(t => t.Result.ToImmutableList(), token);
@@ -157,11 +147,6 @@ namespace Rst.Pdf.Stamp.Web.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> Files([FromForm] StampArgs args, CancellationToken token)
         {
-            if (!TryValidateModel(args))
-            {
-                return BadRequest(ModelState);
-            }
-
             var signatures = await _signature.Info(args)
                 .ContinueWith(t => t.Result.ToImmutableList(), token);
 

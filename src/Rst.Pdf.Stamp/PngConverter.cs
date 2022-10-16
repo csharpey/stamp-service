@@ -10,7 +10,7 @@ public class PngConverter : IPdfConverter
 {
     private readonly ILogger<IPdfConverter> _logger;
 
-    public PngConverter(ILogger<IPdfConverter> logger)
+    public PngConverter(ILogger<PngConverter> logger)
     {
         _logger = logger;
     }
@@ -22,7 +22,7 @@ public class PngConverter : IPdfConverter
         await pdfStream.FlushAsync(token);
 
         var name = Path.GetTempFileName();
-        var process = Process.Start("pdftoppm", new[] { "-png", "-gray", pdfStream.Name, name });
+        var process = Process.Start("pdftoppm", new[] { "-png", "-gray", "-r", "500", pdfStream.Name, name });
         memoryStream.Seek(0, SeekOrigin.Begin);
 
         await process.WaitForExitAsync(token);
