@@ -1,8 +1,10 @@
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Rst.Pdf.Stamp;
 
 public interface IPlaceManager
 {
-    FreeSpaceMap FindNotOccupied(MemoryStream pdf);
+    Task<FreeSpaceMap> FindNotOccupied(Stream pdf, CancellationToken token);
 }

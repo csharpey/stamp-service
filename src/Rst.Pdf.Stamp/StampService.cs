@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.Pkcs;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
@@ -30,13 +31,15 @@ namespace Rst.Pdf.Stamp
             _placeManager = placeManager;
         }
 
-        public async Task<Stream> AddStamp(Stream input, IReadOnlyCollection<SignatureInfo> signatures, IView? template)
+        public async Task<Stream> AddStamp(Stream input, IReadOnlyCollection<SignatureInfo> signatures, IView template,
+            CancellationToken cancellationToken)
         {
             var stream = new MemoryStream();
             var document = new Document(PageSize.A4);
+            var pegPage = await _featureManager.IsEnabledAsync(FeatureFlags.PerPage);
+            var fsm = await _placeManager.FindNotOccupied(input, cancellationToken);
             var reader = new PdfReader(input);
             var stamper = new PdfStamper(reader, stream);
-            var pegPage = await _featureManager.IsEnabledAsync(FeatureFlags.PerPage);
 
             var html = new List<string>();
             for (var i = 0; i < signatures.Count; i++)
@@ -49,7 +52,6 @@ namespace Rst.Pdf.Stamp
             }
 
             var pdfStream = _pdf.FromHtml(html);
-            var fsm = _placeManager.FindNotOccupied(pdfStream);
             var pdfReader = new PdfReader(pdfStream);
             var size = document.PageSize;
             for (var x = reader.NumberOfPages; x > 0; x--)

@@ -1,36 +1,55 @@
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
-using BitMiracle.Docotic.Pdf;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using Emgu.CV.Util;
+using Microsoft.Extensions.Logging;
 
 namespace Rst.Pdf.Stamp;
 
 public class PlaceManager : IPlaceManager
 {
-    public FreeSpaceMap FindNotOccupied(MemoryStream memoryStream)
+    private readonly ILogger<IPlaceManager> _logger;
+    private readonly IPdfConverter _converter;
+
+    public PlaceManager(ILogger<IPlaceManager> logger, IPdfConverter converter)
     {
-        var png = new MemoryStream();
+        _logger = logger;
+        _converter = converter;
+    }
 
-        using (var pdf = new PdfDocument(memoryStream))
-        {
-            PdfDrawOptions options = PdfDrawOptions.Create();
-            options.BackgroundColor = new PdfRgbColor(255, 255, 255);
-            options.HorizontalResolution = 300;
-            options.VerticalResolution = 300;
-
-            for (int i = 0; i < pdf.PageCount; ++i)
-                pdf.Save(png);
-        }
-
-        png.Seek(0, SeekOrigin.Begin);
-        memoryStream.Seek(0, SeekOrigin.Begin);
-
+    public async Task<FreeSpaceMap> FindNotOccupied(Stream memoryStream, CancellationToken token)
+    {
+        var png = await _converter.Convert(memoryStream, token);
+        var mat = new Mat();
 #if DEBUG
-        using (var fileStream = new FileStream("stamp.png", FileMode.Create))
+        await using (var fileStream = new FileStream("stamp.png", FileMode.Create))
         {
-            png.CopyTo(fileStream);
+            await png.CopyToAsync(fileStream, token);
         }
 
         png.Seek(0, SeekOrigin.Begin);
 #endif
+        var b = new byte[png.Length];
+        var bytesCount = await png.ReadAsync(b, token);
+        Debug.Assert(bytesCount == png.Length);
+        
+        CvInvoke.Imdecode(b, ImreadModes.Grayscale, mat);
+
+        var img = mat.ToImage<Gray, byte>()
+            .SmoothGaussian(5)
+            .ThresholdBinary(new Gray(250), new Gray(byte.MaxValue));
+
+        VectorOfPoint c = new();
+        Mat h = new();
+
+        CvInvoke.FindContours(img, c, h, RetrType.External, ChainApproxMethod.ChainApproxSimple);
         return new FreeSpaceMap();
     }
 }

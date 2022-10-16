@@ -99,6 +99,7 @@ namespace Rst.Pdf.Stamp.Web
             services.AddScoped<ITemplateFactory, TemplateFactory>();
             services.AddScoped<IPdfGenerator, PdfGenerator>();
             services.AddScoped<IPlaceManager, PlaceManager>();
+            services.AddScoped<IPdfConverter, PngConverter>();
 
             services.AddHealthChecks()
                 .AddRedis(Configuration.GetConnectionString("Redis"))

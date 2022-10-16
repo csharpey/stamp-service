@@ -96,7 +96,7 @@ namespace Rst.Pdf.Stamp.Web.Controllers
                         var contentType = ContentType(newFileName);
                         try
                         {
-                            var stream = await _stampService.AddStamp(s, signatures, template);
+                            var stream = await _stampService.AddStamp(s, signatures, template, token);
 
                             await _client.PutObjectAsync(new PutObjectRequest
                             {
@@ -109,7 +109,7 @@ namespace Rst.Pdf.Stamp.Web.Controllers
                         catch (IOException e)
                         {
                             _logger.LogError(e, "Invalid file type");
-                            var stream = await _stampService.AddStamp(s, signatures, template);
+                            var stream = await _stampService.AddStamp(s, signatures, template, token);
 
                             await _client.PutObjectAsync(new PutObjectRequest
                             {
@@ -146,7 +146,7 @@ namespace Rst.Pdf.Stamp.Web.Controllers
 
             var newFileName = Path.ChangeExtension(f.FileName, "pdf");
 
-            var stream = await _stampService.AddStamp(f.OpenReadStream(), signatures, null);
+            var stream = await _stampService.AddStamp(f.OpenReadStream(), signatures, null, token);
             var contentType = ContentType(newFileName);
 
             return File(stream, contentType, newFileName);
@@ -173,7 +173,7 @@ namespace Rst.Pdf.Stamp.Web.Controllers
 
                 var newFileName = Path.ChangeExtension(f.FileName, "pdf");
 
-                var stream = await _stampService.AddStamp(f.OpenReadStream(), signatures, null);
+                var stream = await _stampService.AddStamp(f.OpenReadStream(), signatures, null, token);
                 var contentType = ContentType(newFileName);
 
                 var request = new PutObjectRequest
