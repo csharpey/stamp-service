@@ -19,7 +19,7 @@ public class PlaceManager : IPlaceManager
     private readonly ILogger<IPlaceManager> _logger;
     private readonly IPdfConverter _converter;
 
-    public PlaceManager(ILogger<IPlaceManager> logger, IPdfConverter converter)
+    public PlaceManager(ILogger<PlaceManager> logger, IPdfConverter converter)
     {
         _logger = logger;
         _converter = converter;

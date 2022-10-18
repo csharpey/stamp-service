@@ -43,5 +43,3 @@ src/Web/*AppLog*.txt
 .*.env
 *.zip
 *.docx
-*.sgn
-*.pdf
