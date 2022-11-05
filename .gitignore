@@ -43,3 +43,5 @@ src/Web/*AppLog*.txt
 .*.env
 *.zip
 *.docx
+
+swagger.*

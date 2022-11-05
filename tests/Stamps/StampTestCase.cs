@@ -3,15 +3,15 @@ using System.IO;
 using Rst.Pdf.Stamp;
 using Xunit;
 
-namespace Stamps
+namespace Stamps;
+
+[Trait("TestCategory", "Unit")]
+public class StampTestCase
 {
-    public class StampTestCase
+    [Theory]
+    [ClassData(typeof(CmsFactory))]
+    public void TestStamp(string name,  SignatureInfo[] info)
     {
-        [Theory]
-        [ClassData(typeof(CmsFactory))]
-        public void TestStamp(string name,  SignatureInfo[] info)
-        {
-            Assert.True(File.Exists(name));
-        }
+        Assert.True(File.Exists(name));
     }
 }

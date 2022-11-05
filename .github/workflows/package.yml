@@ -1,0 +1,16 @@
+name: dotnet package
+
+on: [push]
+
+jobs:
+  build:
+    container: mcr.microsoft.com/dotnet/sdk:6.0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet pack --configuration Release
+      - name: Publish
+        run: dotnet nuget push "bin/Release/OctocatApp.1.0.0.nupkg"  --api-key YOUR_GITHUB_PAT --source "github"

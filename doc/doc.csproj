@@ -1,0 +1,26 @@
+<Project InitialTargets="CheckMono" Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
+
+    <Target Name="CheckMono">
+        <Exec ConsoleToMSBuild="true" IgnoreExitCode="true" Command="where mono" Condition="'$(OS)' == 'Windows_NT'">
+            <Output TaskParameter="ConsoleOutput" ItemName="OutputOfExec" />
+        </Exec>
+        <Exec ConsoleToMSBuild="true" IgnoreExitCode="true" Command="which mono" Condition="'$(OS)' == 'Unix'">
+            <Output TaskParameter="ConsoleOutput" ItemName="OutputOfExec" />
+        </Exec>
+        <CreateProperty Value="%(OutputOfExec.Identity)">
+            <Output TaskParameter="Value" PropertyName="MonoPath" />
+        </CreateProperty>
+
+        <ItemGroup>
+            <PackageReference Include="docfx.console" Version="2.59.4">
+                <PrivateAssets>all</PrivateAssets>
+                <IncludeAssets>runtime; native; contentfiles; analyzers</IncludeAssets>
+                <IncludeAssets Condition="$([System.IO.File]::Exists($(MonoPath)))">build; buildtransitive</IncludeAssets>
+            </PackageReference>
+        </ItemGroup>
+    </Target>
+</Project>

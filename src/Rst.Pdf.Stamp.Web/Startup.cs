@@ -3,8 +3,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using Amazon.S3;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpLogging;
@@ -16,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using Rst.Pdf.Stamp.Web.Extensions;
 using Rst.Pdf.Stamp.Web.Interfaces;
@@ -53,7 +56,7 @@ namespace Rst.Pdf.Stamp.Web
                 setup.GroupNameFormat = "'v'VVV";
                 setup.SubstituteApiVersionInUrl = true;
             });
-            services.AddSwaggerGen(opts =>
+            services.AddSwaggerGen(options =>
             {
                 var info = new OpenApiInfo
                 {
@@ -63,18 +66,52 @@ namespace Rst.Pdf.Stamp.Web
                     Contact = new OpenApiContact { Name = "Nikita Kupreenkov", Email = "kupnsaloxa@gmail.com" },
                     License = new OpenApiLicense { Name = "MIT" },
                 };
-                opts.SwaggerDoc("v1", info);
-                opts.SwaggerDoc("v2", info);
+                options.EnableAnnotations();
+                options.AddServer(new OpenApiServer
+                {
+                    Description = "Local server",
+                    Url = new UriBuilder(Uri.UriSchemeHttp, IPAddress.Loopback.ToString(), 5105).ToString()
+                });
+                options.SwaggerDoc("v1", info);
+                options.SwaggerDoc("v2", info);
 
+                options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter a valid token",
+                    Name = HeaderNames.Authorization,
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = JwtBearerDefaults.AuthenticationScheme
+                });
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = JwtBearerDefaults.AuthenticationScheme
+                            }
+                        },
+                        new string[] { }
+                    }
+                });
                 var xmlCommentsFullPath = Path.Combine(
                     AppContext.BaseDirectory,
                     string.Join('.', assembly.GetName().Name, "xml"));
-                opts.IncludeXmlComments(xmlCommentsFullPath);
+                options.IncludeXmlComments(xmlCommentsFullPath);
             });
             services.AddApiVersioning(options =>
             {
                 options.AssumeDefaultVersionWhenUnspecified = true;
                 options.ReportApiVersions = true;
+            });
+            services.AddVersionedApiExplorer(setup =>
+            {
+                setup.GroupNameFormat = "'v'VVV";
+                setup.SubstituteApiVersionInUrl = true;
             });
             services.Configure<BucketOptions>(options =>
             {

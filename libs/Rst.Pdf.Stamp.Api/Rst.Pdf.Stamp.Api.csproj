@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AnalysisLevel>6.0</AnalysisLevel>
+        <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+        <Version>0.0.1</Version>
+        <Authors>kupns-aka-kupa</Authors>
+        <Company>csharpey</Company>
+        <PackageDescription>Generate from OpenApi specification Stamp service api</PackageDescription>
+        <RepositoryUrl>http://gitlab.etpgpb.loc/nsi2/backend</RepositoryUrl>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../src/Rst.Pdf.Stamp.Web/Rst.Pdf.Stamp.Web.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="NSwag.Core.Yaml" Version="13.17.0" />
+        <PackageReference Include="NSwag.ApiDescription.Client" Version="13.17.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="NSwag.MSBuild" Version="13.17.0">
+            <PrivateAssets>All</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+    <PropertyGroup>
+        <OpenApiGenerateCodeOnBuild>true</OpenApiGenerateCodeOnBuild>
+        <OpenApiGenerateCodeAtDesignTime>true</OpenApiGenerateCodeAtDesignTime>
+    </PropertyGroup>
+    <ItemGroup>
+        <OpenApiReference Include="Services/swagger.json">
+            <ClassName>StampClient</ClassName>
+            <OutputPath>Clients.Generated/StampClient.cs</OutputPath>
+            <CodeGenerator>NSwagCSharp</CodeGenerator>
+            <Namespace>$(RootNamespace).Clients.Generated</Namespace>
+            <Options>/GenerateDtoTypes:true /serializeTypeInformation:true /jsonLibrary:SystemTextJson /GenerateClientInterfaces:true /wrapDtoExceptions:true /generateExceptionClasses:true /disposeHttpClient:false /generateUpdateJsonSerializerSettingsMethod:true /generateJsonMethods:false /operationGenerationMode:SingleClientFromOperationId
+            </Options>
+        </OpenApiReference>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="obj\Clients.Generated\StampClient.cs" />
+    </ItemGroup>
+</Project>

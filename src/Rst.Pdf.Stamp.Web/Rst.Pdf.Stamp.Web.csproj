@@ -31,6 +31,7 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.0.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.4.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     </ItemGroup>
 
@@ -61,4 +62,33 @@
             <DependentUpon>Stamp.resx</DependentUpon>
         </Compile>
     </ItemGroup>
+    <Target Name="OpenAPI" AfterTargets="Build">
+        <Exec Command="dotnet swagger tofile --output swagger.yaml --yaml $(MSBuildThisFileDirectory)$(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
+        <Exec Command="dotnet swagger tofile --output swagger.json $(MSBuildThisFileDirectory)$(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
+    </Target>
+    <Target Name="CopyOpenAPI" AfterTargets="OpenAPI">
+        <ItemGroup>
+            <SwaggerSchemas Include="$(ProjectDir)swagger.*" />
+        </ItemGroup>
+        <PropertyGroup>
+            <CsharpApiLibPath>libs/Rst.Pdf.Stamp.Api/Services</CsharpApiLibPath>
+        </PropertyGroup>
+        <Copy SourceFiles="@(SwaggerSchemas)" DestinationFolder="$(SolutionDir)$(CsharpApiLibPath)" />
+    </Target>
+
+    <ItemGroup>
+        <PackageReference Include="NSwag.Core.Yaml" Version="13.17.0" />
+        <PackageReference Include="NSwag.ApiDescription.Client" Version="13.17.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="NSwag.MSBuild" Version="13.17.0">
+            <PrivateAssets>All</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+    <PropertyGroup>
+        <OpenApiGenerateCodeOnBuild>true</OpenApiGenerateCodeOnBuild>
+        <OpenApiGenerateCodeAtDesignTime>true</OpenApiGenerateCodeAtDesignTime>
+    </PropertyGroup>
 </Project>

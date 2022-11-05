@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "dotnet-ef": {
+      "version": "6.0.9",
+      "commands": [
+        "dotnet-ef"
+      ]
+    },
+    "dotnet-format": {
+      "version": "5.1.250801",
+      "commands": [
+        "dotnet-format"
+      ]
+    },
+    "nswag.consolecore": {
+      "version": "13.17.0",
+      "commands": [
+        "nswag"
+      ]
+    },
+    "swashbuckle.aspnetcore.cli": {
+      "version": "6.4.0",
+      "commands": [
+        "swagger"
+      ]
+    }
+  }
+}
