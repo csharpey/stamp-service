@@ -6,47 +6,46 @@ using System.Linq;
 using System.Security.Cryptography.Pkcs;
 using Rst.Pdf.Stamp;
 
-namespace Stamps
+namespace Stamps;
+
+public class CmsFactory : IEnumerable<object[]>
 {
-    public class CmsFactory : IEnumerable<object[]>
+    private static readonly string[] Extensions = { "*.pdf", "*.doc", "*.docx" };
+    public IEnumerator<object[]> GetEnumerator()
     {
-        private static readonly string[] Extensions = { "*.pdf", "*.doc", "*.docx" };
-        public IEnumerator<object[]> GetEnumerator()
+        var signs = Directory.GetFiles(AppContext.BaseDirectory, "*.sgn")
+            .GroupBy(s => Path.GetFileName(s).StartsWith("operator")).ToArray();
+            
+        var documents = Extensions.SelectMany(e => Directory.GetFiles(AppContext.BaseDirectory, e))
+            .Where(s => !Path.GetFileName(s).StartsWith("stamped")).ToList();
+
+        foreach (var doc in documents)
         {
-            var signs = Directory.GetFiles(AppContext.BaseDirectory, "*.sgn")
-                .GroupBy(s => Path.GetFileName(s).StartsWith("operator")).ToArray();
-            
-            var documents = Extensions.SelectMany(e => Directory.GetFiles(AppContext.BaseDirectory, e))
-                .Where(s => !Path.GetFileName(s).StartsWith("stamped")).ToList();
-
-            foreach (var doc in documents)
+            var info = new List<SignatureInfo>();
+            foreach (var (@operator, user) in signs.First().Zip(signs.Last()))
             {
-                var info = new List<SignatureInfo>();
-                foreach (var (@operator, user) in signs.First().Zip(signs.Last()))
                 {
-                    {
-                        var sign = new FileStream(@operator, FileMode.Open);
+                    var sign = new FileStream(@operator, FileMode.Open);
             
-                        var signedCms = new SignedCms();
-                        var read = new StreamReader(sign).ReadToEnd();
-                        signedCms.Decode(Convert.FromBase64String(read));
-                        info.Add(new SignatureInfo(signedCms));
-                    }
-
-                    {
-                        var sign = new FileStream(user, FileMode.Open);
-            
-                        var signedCms = new SignedCms();
-                        var read = new StreamReader(sign).ReadToEnd();
-                        signedCms.Decode(Convert.FromBase64String(read));
-                        info.Add(new SignatureInfo(signedCms));
-                    }
-                    
+                    var signedCms = new SignedCms();
+                    var read = new StreamReader(sign).ReadToEnd();
+                    signedCms.Decode(Convert.FromBase64String(read));
+                    info.Add(new SignatureInfo(signedCms));
                 }
-                yield return new object[] { doc, info.ToArray() };
-            }
-        }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+                {
+                    var sign = new FileStream(user, FileMode.Open);
+            
+                    var signedCms = new SignedCms();
+                    var read = new StreamReader(sign).ReadToEnd();
+                    signedCms.Decode(Convert.FromBase64String(read));
+                    info.Add(new SignatureInfo(signedCms));
+                }
+                    
+            }
+            yield return new object[] { doc, info.ToArray() };
+        }
     }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

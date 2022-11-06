@@ -13,75 +13,74 @@ using Microsoft.Extensions.Options;
 using Rst.Pdf.Stamp.Web.Interfaces;
 using Rst.Pdf.Stamp.Web.Options;
 
-namespace Rst.Pdf.Stamp.Web
+namespace Rst.Pdf.Stamp.Web;
+
+public class TemplateService : ITemplateService
 {
-    public class TemplateService : ITemplateService
+    private readonly ITempDataProvider _tempDataProvider;
+    private readonly IHttpContextAccessor _accessor;
+    private readonly ITemplateFactory _templateFactory;
+
+    public TemplateService(
+        ITempDataProvider tempDataProvider,
+        IHttpContextAccessor accessor, ITemplateFactory templateFactory)
     {
-        private readonly ITempDataProvider _tempDataProvider;
-        private readonly IHttpContextAccessor _accessor;
-        private readonly ITemplateFactory _templateFactory;
+        _tempDataProvider = tempDataProvider;
+        _accessor = accessor;
+        _templateFactory = templateFactory;
+    }
 
-        public TemplateService(
-            ITempDataProvider tempDataProvider,
-            IHttpContextAccessor accessor, ITemplateFactory templateFactory)
-        {
-            _tempDataProvider = tempDataProvider;
-            _accessor = accessor;
-            _templateFactory = templateFactory;
-        }
+    public async Task<string> RenderToString(IView view, object model)
+    {
+        var actionContext = new ActionContext(_accessor.HttpContext, new RouteData(), new ActionDescriptor());
 
-        public async Task<string> RenderToString(IView view, object model)
-        {
-            var actionContext = new ActionContext(_accessor.HttpContext, new RouteData(), new ActionDescriptor());
+        await using var sw = new StringWriter();
 
-            await using var sw = new StringWriter();
+        var viewDictionary =
+            new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+            {
+                Model = model
+            };
 
-            var viewDictionary =
-                new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
-                {
-                    Model = model
-                };
+        var viewContext = new ViewContext(
+            actionContext,
+            view,
+            viewDictionary,
+            new TempDataDictionary(actionContext.HttpContext, _tempDataProvider),
+            sw,
+            new HtmlHelperOptions()
+        );
 
-            var viewContext = new ViewContext(
-                actionContext,
-                view,
-                viewDictionary,
-                new TempDataDictionary(actionContext.HttpContext, _tempDataProvider),
-                sw,
-                new HtmlHelperOptions()
-            );
+        await view.RenderAsync(viewContext);
+        return PreMailer.Net.PreMailer.MoveCssInline(sw.ToString(), true).Html;
+    }
 
-            await view.RenderAsync(viewContext);
-            return PreMailer.Net.PreMailer.MoveCssInline(sw.ToString(), true).Html;
-        }
+    public async Task<string> RenderToString(SignatureInfo model)
+    {
+        IView view;
 
-        public async Task<string> RenderToString(SignatureInfo model)
-        {
-            IView view;
+        view =  _templateFactory.FirstOrDefault(x => x.Path.Contains("Stamp"));
 
-            view =  _templateFactory.FirstOrDefault(x => x.Path.Contains("Stamp"));
+        var actionContext = new ActionContext(_accessor.HttpContext, new RouteData(), new ActionDescriptor());
 
-            var actionContext = new ActionContext(_accessor.HttpContext, new RouteData(), new ActionDescriptor());
+        await using var sw = new StringWriter();
 
-            await using var sw = new StringWriter();
+        var viewDictionary =
+            new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+            {
+                Model = model
+            };
 
-            var viewDictionary =
-                new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
-                {
-                    Model = model
-                };
+        var viewContext = new ViewContext(
+            actionContext,
+            view,
+            viewDictionary,
+            new TempDataDictionary(actionContext.HttpContext, _tempDataProvider),
+            sw,
+            new HtmlHelperOptions()
+        );
 
-            var viewContext = new ViewContext(
-                actionContext,
-                view,
-                viewDictionary,
-                new TempDataDictionary(actionContext.HttpContext, _tempDataProvider),
-                sw,
-                new HtmlHelperOptions()
-            );
-
-            await view.RenderAsync(viewContext);
-            return PreMailer.Net.PreMailer.MoveCssInline(sw.ToString(), true).Html;
-        }
+        await view.RenderAsync(viewContext);
+        return PreMailer.Net.PreMailer.MoveCssInline(sw.ToString(), true).Html;
     }
 }

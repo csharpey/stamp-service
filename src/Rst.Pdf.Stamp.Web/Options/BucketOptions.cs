@@ -1,23 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Rst.Pdf.Stamp.Web.Options
+namespace Rst.Pdf.Stamp.Web.Options;
+
+public class BucketOptions : IEnumerable<string>
 {
-    public class BucketOptions : IEnumerable<string>
+    public string Public { get; set; }
+    public string Stamped { get; set; }
+
+
+    public IEnumerator<string> GetEnumerator()
     {
-        public string Public { get; set; }
-        public string Stamped { get; set; }
+        yield return Public;
+        yield return Stamped;
+    }
 
-
-        public IEnumerator<string> GetEnumerator()
-        {
-            yield return Public;
-            yield return Stamped;
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

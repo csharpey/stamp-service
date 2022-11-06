@@ -4,11 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 
-namespace Rst.Pdf.Stamp
+namespace Rst.Pdf.Stamp;
+
+public interface IStampService
 {
-    public interface IStampService
-    {
-        public Task<Stream> AddStamp(Stream input, IReadOnlyCollection<SignatureInfo> signatures, IView template,
-            CancellationToken cancellationToken);
-    }
+    public Task<Stream> AddStamp(Stream input, IReadOnlyCollection<SignatureInfo> signatures, IView template,
+        CancellationToken cancellationToken);
 }

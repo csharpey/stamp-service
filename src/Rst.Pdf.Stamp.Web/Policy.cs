@@ -1,16 +1,15 @@
-namespace Rst.Pdf.Stamp.Web
+namespace Rst.Pdf.Stamp.Web;
+
+public class Policy
 {
-    public class Policy
-    {
-        /// <summary>
-        /// Adjacent subsystems requests
-        /// </summary>
-        public const string Internal = "internal";
+    /// <summary>
+    /// Adjacent subsystems requests
+    /// </summary>
+    public const string Internal = "internal";
         
-        /// <summary>
-        /// Users requests
-        /// </summary>
-        public const string External = "external";
+    /// <summary>
+    /// Users requests
+    /// </summary>
+    public const string External = "external";
         
-    }
 }

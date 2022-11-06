@@ -19,119 +19,144 @@ using Microsoft.FeatureManagement.Mvc;
 using Rst.Pdf.Stamp.Web.Interfaces;
 using Rst.Pdf.Stamp.Web.Options;
 
-namespace Rst.Pdf.Stamp.Web.Controllers
+namespace Rst.Pdf.Stamp.Web.Controllers;
+
+[ApiVersion("1.0")]
+[Route("api/[controller]")]
+public class StampsController : ControllerBase
 {
-    [ApiController]
-    [ApiVersion("1.0")]
-    [Route("api/[controller]")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public class StampsController : ControllerBase
+    private readonly ILogger<StampsController> _logger;
+    private readonly IStampService _stampService;
+    private readonly ITemplateFactory _templateFactory;
+    private readonly AmazonS3Client _client;
+    private readonly ISignatureService _signature;
+    private readonly BucketOptions _options;
+    private readonly IContentTypeProvider _contentTypeProvider;
+
+    public StampsController(
+        ILogger<StampsController> logger,
+        IStampService stampService,
+        IContentTypeProvider contentTypeProvider,
+        AmazonS3Client client,
+        IOptions<BucketOptions> options,
+        ISignatureService signature,
+        ITemplateFactory templateFactory)
     {
-        private readonly ILogger<StampsController> _logger;
-        private readonly IStampService _stampService;
-        private readonly ITemplateFactory _templateFactory;
-        private readonly AmazonS3Client _client;
-        private readonly ISignatureService _signature;
-        private readonly BucketOptions _options;
-        private readonly IContentTypeProvider _contentTypeProvider;
+        _logger = logger;
+        _stampService = stampService;
+        _contentTypeProvider = contentTypeProvider;
+        _client = client;
+        _signature = signature;
+        _templateFactory = templateFactory;
+        _options = options.Value;
+    }
 
-        public StampsController(
-            ILogger<StampsController> logger,
-            IStampService stampService,
-            IContentTypeProvider contentTypeProvider,
-            AmazonS3Client client,
-            IOptions<BucketOptions> options,
-            ISignatureService signature,
-            ITemplateFactory templateFactory)
+    [FeatureGate(FeatureFlags.S3)]
+    [HttpPost("[action]")]
+    [Produces(MediaTypeNames.Application.Json)]
+    [Consumes(MediaTypeNames.Application.Json)]
+    public async Task<IActionResult> Refs([FromBody] FileRef args, CancellationToken token)
+    {
+        var template = _templateFactory.Template();
+
+        var signatures = await _signature.Info(args)
+            .ContinueWith(t => t.Result.ToImmutableList(), token);
+
+        var f = await _client.GetObjectAsync(args.Bucket, args.Key, token);
+        var archive = new ZipArchive(f.ResponseStream, ZipArchiveMode.Read);
+
+        var stamped = await Stamp(archive, signatures, template, token)
+            .ToListAsync(cancellationToken: token);
+
+        return Ok(stamped);
+    }
+
+    private async IAsyncEnumerable<FileRef> Stamp(ZipArchive archive,
+        IReadOnlyCollection<SignatureInfo> signatures,
+        IView template,
+        [EnumeratorCancellation] CancellationToken token)
+    {
+        foreach (var g in archive.Entries.GroupBy(e => new FileInfo(e.Name).Extension)
+                     .Where(g => SignedDocument.DocumentExtensions.Contains(g.Key)))
         {
-            _logger = logger;
-            _stampService = stampService;
-            _contentTypeProvider = contentTypeProvider;
-            _client = client;
-            _signature = signature;
-            _templateFactory = templateFactory;
-            _options = options.Value;
-        }
-
-        [FeatureGate(FeatureFlags.S3)]
-        [HttpPost("[action]")]
-        public async Task<IActionResult> Refs([FromBody] FileRef args, CancellationToken token)
-        {
-            var template = _templateFactory.Template();
-
-            var signatures = await _signature.Info(args)
-                .ContinueWith(t => t.Result.ToImmutableList(), token);
-
-            var f = await _client.GetObjectAsync(args.Bucket, args.Key, token);
-            var archive = new ZipArchive(f.ResponseStream, ZipArchiveMode.Read);
-
-            var stamped = await Stamp(archive, signatures, template, token)
-                .ToListAsync(cancellationToken: token);
-
-            return Ok(stamped);
-        }
-
-        private async IAsyncEnumerable<FileRef> Stamp(ZipArchive archive,
-            IReadOnlyCollection<SignatureInfo> signatures,
-            IView template,
-            [EnumeratorCancellation] CancellationToken token)
-        {
-            foreach (var g in archive.Entries.GroupBy(e => new FileInfo(e.Name).Extension)
-                         .Where(g => SignedDocument.DocumentExtensions.Contains(g.Key)))
+            foreach (var entry in g.ToList())
             {
-                foreach (var entry in g.ToList())
+                using (_logger.BeginScope("Archive entry '{Name}'", entry.Name))
                 {
-                    using (_logger.BeginScope("Archive entry '{Name}'", entry.Name))
+                    Stream s = new MemoryStream((int)entry.Length);
+                    await entry.Open().CopyToAsync(s, token);
+                    s.Seek(0, SeekOrigin.Begin);
+                    var newFileName = Path.ChangeExtension(entry.Name, "pdf");
+                    var contentType = ContentType(newFileName);
+                    try
                     {
-                        Stream s = new MemoryStream((int)entry.Length);
-                        await entry.Open().CopyToAsync(s, token);
-                        s.Seek(0, SeekOrigin.Begin);
-                        var newFileName = Path.ChangeExtension(entry.Name, "pdf");
-                        var contentType = ContentType(newFileName);
-                        try
-                        {
-                            var stream = await _stampService.AddStamp(s, signatures, template, token);
+                        var stream = await _stampService.AddStamp(s, signatures, template, token);
 
-                            await _client.PutObjectAsync(new PutObjectRequest
-                            {
-                                BucketName = _options.Stamped,
-                                Key = newFileName,
-                                InputStream = stream,
-                                ContentType = contentType
-                            }, token);
-                        }
-                        catch (IOException e)
+                        await _client.PutObjectAsync(new PutObjectRequest
                         {
-                            _logger.LogError(e, "Invalid file type");
-                            var stream = await _stampService.AddStamp(s, signatures, template, token);
-
-                            await _client.PutObjectAsync(new PutObjectRequest
-                            {
-                                BucketName = _options.Stamped,
-                                Key = newFileName,
-                                InputStream = stream,
-                                ContentType = contentType
-                            }, token);
-                        }
-
-                        yield return new FileRef
-                        {
-                            Bucket = _options.Stamped,
-                            Key = newFileName
-                        };
+                            BucketName = _options.Stamped,
+                            Key = newFileName,
+                            InputStream = stream,
+                            ContentType = contentType
+                        }, token);
                     }
+                    catch (IOException e)
+                    {
+                        _logger.LogError(e, "Invalid file type");
+                        var stream = await _stampService.AddStamp(s, signatures, template, token);
+
+                        await _client.PutObjectAsync(new PutObjectRequest
+                        {
+                            BucketName = _options.Stamped,
+                            Key = newFileName,
+                            InputStream = stream,
+                            ContentType = contentType
+                        }, token);
+                    }
+
+                    yield return new FileRef
+                    {
+                        Bucket = _options.Stamped,
+                        Key = newFileName
+                    };
                 }
             }
         }
+    }
 
-        [HttpPost("[action]")]
-        public async Task<IActionResult> Previews([FromForm] PreviewArgs args, CancellationToken token)
+    [HttpPost("[action]")]
+    [Produces(MediaTypeNames.Application.Pdf)]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Previews([FromForm] PreviewArgs args, CancellationToken token)
+    {
+        var f = args.File;
+        var signatures = await _signature.Info(args)
+            .ContinueWith(t => t.Result.ToImmutableList(), token);
+
+        _logger.LogInformation("Process {FileName} with size {Length}", f.FileName, f.Length);
+
+        var newFileName = Path.ChangeExtension(f.FileName, "pdf");
+
+        var stream = await _stampService.AddStamp(f.OpenReadStream(), signatures, null, token);
+        var contentType = ContentType(newFileName);
+
+        return File(stream, contentType, newFileName);
+    }
+
+        
+    [FeatureGate(FeatureFlags.S3)]
+    [HttpPost("[action]")]
+    [Produces(MediaTypeNames.Application.Pdf)]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Files([FromForm] StampArgs args, CancellationToken token)
+    {
+        var signatures = await _signature.Info(args)
+            .ContinueWith(t => t.Result.ToImmutableList(), token);
+
+        var collection = new List<object>();
+
+        foreach (var f in args.Files)
         {
-            var f = args.File;
-            var signatures = await _signature.Info(args)
-                .ContinueWith(t => t.Result.ToImmutableList(), token);
-
             _logger.LogInformation("Process {FileName} with size {Length}", f.FileName, f.Length);
 
             var newFileName = Path.ChangeExtension(f.FileName, "pdf");
@@ -139,55 +164,32 @@ namespace Rst.Pdf.Stamp.Web.Controllers
             var stream = await _stampService.AddStamp(f.OpenReadStream(), signatures, null, token);
             var contentType = ContentType(newFileName);
 
-            return File(stream, contentType, newFileName);
-        }
-
-        
-        [FeatureGate(FeatureFlags.S3)]
-        [HttpPost("[action]")]
-        public async Task<IActionResult> Files([FromForm] StampArgs args, CancellationToken token)
-        {
-            var signatures = await _signature.Info(args)
-                .ContinueWith(t => t.Result.ToImmutableList(), token);
-
-            var collection = new List<object>();
-
-            foreach (var f in args.Files)
+            var request = new PutObjectRequest
             {
-                _logger.LogInformation("Process {FileName} with size {Length}", f.FileName, f.Length);
+                BucketName = _options.Stamped,
+                Key = newFileName,
+                InputStream = stream,
+                ContentType = contentType,
+            };
+            await _client.PutObjectAsync(request, token);
 
-                var newFileName = Path.ChangeExtension(f.FileName, "pdf");
-
-                var stream = await _stampService.AddStamp(f.OpenReadStream(), signatures, null, token);
-                var contentType = ContentType(newFileName);
-
-                var request = new PutObjectRequest
-                {
-                    BucketName = _options.Stamped,
-                    Key = newFileName,
-                    InputStream = stream,
-                    ContentType = contentType,
-                };
-                await _client.PutObjectAsync(request, token);
-
-                collection.Add(new
-                {
-                    BucketName = _options.Stamped,
-                    Key = newFileName
-                });
-            }
-
-            return Ok(collection);
-        }
-
-        private string ContentType(string name)
-        {
-            if (!_contentTypeProvider.TryGetContentType(name, out var contentType))
+            collection.Add(new
             {
-                contentType = MediaTypeNames.Application.Octet;
-            }
-
-            return contentType;
+                BucketName = _options.Stamped,
+                Key = newFileName
+            });
         }
+
+        return Ok(collection);
+    }
+
+    private string ContentType(string name)
+    {
+        if (!_contentTypeProvider.TryGetContentType(name, out var contentType))
+        {
+            contentType = MediaTypeNames.Application.Octet;
+        }
+
+        return contentType;
     }
 }
