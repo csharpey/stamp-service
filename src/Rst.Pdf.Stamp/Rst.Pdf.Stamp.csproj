@@ -25,12 +25,4 @@
         <PackageReference Include="PreMailer.Net" Version="2.4.0" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Extensions" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Remove="Extensions\HtmlHelperExtensions.cs" />
-    </ItemGroup>
-
 </Project>

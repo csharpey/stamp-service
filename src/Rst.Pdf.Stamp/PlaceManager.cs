@@ -19,6 +19,8 @@ public class PlaceManager : IPlaceManager
     private readonly ILogger<IPlaceManager> _logger;
     private readonly IPdfConverter _converter;
 
+    private const int DilationIteration = 5;
+
     public PlaceManager(ILogger<PlaceManager> logger, IPdfConverter converter)
     {
         _logger = logger;
@@ -32,7 +34,7 @@ public class PlaceManager : IPlaceManager
         var b = new byte[png.Length];
         var bytesCount = await png.ReadAsync(b, token);
         Debug.Assert(bytesCount == png.Length);
-        
+
         var mat = new Mat();
         CvInvoke.Imdecode(b, ImreadModes.Grayscale, mat);
 
@@ -43,14 +45,21 @@ public class PlaceManager : IPlaceManager
         var m = new Mat();
         VectorOfVectorOfPoint contours = new();
 
-        var d = img.CopyBlank();
-        var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(50, 50), Point.Empty);
-        CvInvoke.Dilate(img, d, kernel, Point.Empty, 1, BorderType.Default, new MCvScalar(255) );
-        CvInvoke.FindContours(d, contours, m, RetrType.External, ChainApproxMethod.ChainApproxSimple);
-        
-        var tmp = d.CopyBlank();
-        CvInvoke.DrawContours(tmp, contours, -1, new MCvScalar(255));
+        const int textSize = 50;
+
+        var image = img.CopyBlank();
+        var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(textSize, textSize), Point.Empty);
+        CvInvoke.Dilate(img, image, kernel, Point.Empty, DilationIteration, BorderType.Default, new MCvScalar(255));
+        CvInvoke.FindContours(image, contours, m, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+
+        double perimetr = CvInvoke.ArcLength(contours[0], true);
+        VectorOfPoint approximation = new VectorOfPoint();
+        CvInvoke.ApproxPolyDP(contours[0], approximation, 0.004 * perimetr, true);
+#if DEBUG
+        var tmp = image.CopyBlank();
+        CvInvoke.DrawContours(tmp, new VectorOfVectorOfPoint(approximation), -1, new MCvScalar(255));
         tmp.Save("stamp.png");
+#endif
         return new FreeSpaceMap();
     }
 }

@@ -40,10 +40,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Filters" />
-    </ItemGroup>
-
-    <ItemGroup>
         <None Include="Views\Stamp.cshtml" />
         <None Include="wwwroot\Roboto-Regular.ttf" />
         <None Include="wwwroot\style.css" />

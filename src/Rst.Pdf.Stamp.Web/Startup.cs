@@ -133,9 +133,7 @@ public class Startup
 
         services.AddHttpLogging(logging =>
         {
-            logging.LoggingFields = HttpLoggingFields.RequestMethod | HttpLoggingFields.RequestBody |
-                                    HttpLoggingFields.ResponseBody |
-                                    HttpLoggingFields.ResponseStatusCode;
+            logging.LoggingFields = HttpLoggingFields.All;
         });
         services.AddFileStorage(Configuration);
         services.AddScoped<IStampService, StampService>();
