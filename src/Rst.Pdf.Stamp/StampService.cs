@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.Pkcs;
@@ -37,7 +38,12 @@ public class StampService : IStampService
         var stream = new MemoryStream();
         var document = new Document(PageSize.A4);
         var pegPage = await _featureManager.IsEnabledAsync(FeatureFlags.PerPage);
-        var fsm = await _placeManager.FindNotOccupied(input, cancellationToken);
+
+        var rectangles = new List<System.Drawing.Rectangle>
+        {
+            new(0, 0, (int)document.PageSize.Width, (int)document.PageSize.Height)
+        };
+        var fsm = await _placeManager.FindEmpty(input, rectangles, cancellationToken);
         var reader = new PdfReader(input);
         var stamper = new PdfStamper(reader, stream);
 

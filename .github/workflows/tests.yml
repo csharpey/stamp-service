@@ -1,6 +1,11 @@
-name: Unit Tests
+name: Tests
 
-on: [ push ]
+#on:
+#  push:
+#    branches: ["*"]
+#  paths:
+#    - src/**/*
+#    - tests/**/*
 
 jobs:
   unit-tests:
@@ -11,7 +16,7 @@ jobs:
       - name: Install tools
         run: dotnet tool restore
       - name: Install dependencies
-        run: dotnet restore
+        run: dotnet restore --configfile NuGet.config
       - name: Test
         run: dotnet test --filter TestCategory=Unit
   integration-tests:
@@ -27,6 +32,6 @@ jobs:
       - name: Install tools
         run: dotnet tool restore
       - name: Install dependencies
-        run: dotnet restore
+        run: dotnet restore --configfile NuGet.config
       - name: Test
         run: dotnet test --filter TestCategory=Integration

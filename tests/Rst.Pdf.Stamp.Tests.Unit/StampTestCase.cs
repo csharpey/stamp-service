@@ -3,7 +3,7 @@ using System.IO;
 using Rst.Pdf.Stamp;
 using Xunit;
 
-namespace Stamps;
+namespace Rst.Pdf.Stamp.Tests.Unit;
 
 [Trait("TestCategory", "Unit")]
 public class StampTestCase

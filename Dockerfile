@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN dotnet restore
+RUN dotnet restore --configfile NuGet.config
 
 WORKDIR /app/src/Rst.Pdf.Stamp.Web
 

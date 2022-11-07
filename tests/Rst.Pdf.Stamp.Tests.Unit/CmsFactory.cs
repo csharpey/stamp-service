@@ -6,7 +6,7 @@ using System.Linq;
 using System.Security.Cryptography.Pkcs;
 using Rst.Pdf.Stamp;
 
-namespace Stamps;
+namespace Rst.Pdf.Stamp.Tests.Unit;
 
 public class CmsFactory : IEnumerable<object[]>
 {
