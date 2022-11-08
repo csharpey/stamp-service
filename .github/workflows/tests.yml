@@ -5,7 +5,6 @@ on:
     paths:
       - src/**/*
       - tests/**/*
-      - NuGet.config
 
 jobs:
   unit-tests:
