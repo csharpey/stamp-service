@@ -22,14 +22,16 @@ public class StampService : IStampService
     private readonly ITemplateService _renderer;
 
     private readonly IFeatureManager _featureManager;
+    private readonly IPdfConverter _converter;
 
     public StampService(ITemplateService renderer, IPdfGenerator pdf, IFeatureManager featureManager,
-        IPlaceManager placeManager)
+        IPlaceManager placeManager, IPdfConverter converter)
     {
         _renderer = renderer;
         _pdf = pdf;
         _featureManager = featureManager;
         _placeManager = placeManager;
+        _converter = converter;
     }
 
     public async Task<Stream> AddStamp(Stream input, IReadOnlyCollection<SignatureInfo> signatures, IView template,
@@ -43,7 +45,9 @@ public class StampService : IStampService
         {
             new(0, 0, (int)document.PageSize.Width, (int)document.PageSize.Height)
         };
-        var fsm = await _placeManager.FindEmpty(input, rectangles, cancellationToken);
+        
+        var png = await _converter.Convert(input, cancellationToken);
+        var fsm = await _placeManager.FindEmpty(png, rectangles, cancellationToken);
         var reader = new PdfReader(input);
         var stamper = new PdfStamper(reader, stream);
 

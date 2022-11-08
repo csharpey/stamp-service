@@ -20,6 +20,8 @@ jobs:
         run: dotnet restore
       - name: Test
         run: dotnet test --filter TestCategory=Unit
+        env:
+          LD_LIBRARY_PATH: runtimes/ubuntu.20.04-x64/native
   integration-tests:
     runs-on: ubuntu-latest
     services:
@@ -38,3 +40,5 @@ jobs:
         run: dotnet restore 
       - name: Test
         run: dotnet test --filter TestCategory=Integration
+        env:
+          LD_LIBRARY_PATH: runtimes/ubuntu.20.04-x64/native

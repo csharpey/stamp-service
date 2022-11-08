@@ -9,7 +9,8 @@
       "applicationUrl": "http://0.0.0.0:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "LD_DEBUG": "unused"
+        "LD_DEBUG": "unused",
+        "LD_LIBRARY_PATH": "bin/Debug/net6.0/runtimes/ubuntu.20.04-x64/native"
       }
     },
     "Prod": {

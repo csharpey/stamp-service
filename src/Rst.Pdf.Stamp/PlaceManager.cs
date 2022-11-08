@@ -18,16 +18,14 @@ namespace Rst.Pdf.Stamp;
 public class PlaceManager : IPlaceManager
 {
     private readonly ILogger<IPlaceManager> _logger;
-    private readonly IPdfConverter _converter;
 
-    private const int DilationIteration = 3;
+    private const int DilationIteration = 2;
     private static readonly LineSegment2D YAxis = new(Point.Empty, new Point(0, 1));
     private static readonly LineSegment2D XAxis = new(Point.Empty, new Point(1, 0));
 
-    public PlaceManager(ILogger<PlaceManager> logger, IPdfConverter converter)
+    public PlaceManager(ILogger<PlaceManager> logger)
     {
         _logger = logger;
-        _converter = converter;
     }
 
     public async Task<FreeSpaceMap> FindEmpty(
@@ -35,11 +33,9 @@ public class PlaceManager : IPlaceManager
         IReadOnlyCollection<Rectangle> rectangles,
         CancellationToken token)
     {
-        var png = await _converter.Convert(memoryStream, token);
-
-        var b = new byte[png.Length];
-        var bytesCount = await png.ReadAsync(b, token);
-        Debug.Assert(bytesCount == png.Length);
+        var b = new byte[memoryStream.Length];
+        var bytesCount = await memoryStream.ReadAsync(b, token);
+        Debug.Assert(bytesCount == memoryStream.Length);
 
         var src = new Mat();
         CvInvoke.Imdecode(b, ImreadModes.Grayscale, src);
@@ -68,7 +64,7 @@ public class PlaceManager : IPlaceManager
         var debug = src.ToImage<Rgb, byte>();
         // CvInvoke.DrawContours(debug, contours, -1, color, thickness);
         CvInvoke.DrawContours(debug, approximatedContours, -1, color, thickness);
-        debug.Save("stamp.png");
+        debug.Save("debug.png");
 #endif
         return new FreeSpaceMap();
     }
@@ -94,7 +90,7 @@ public class PlaceManager : IPlaceManager
     {
         var fitted = new VectorOfPoint();
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < contour.Size - 1; i++)
         {
             var rotation = new Mat();
             var line = new LineSegment2D(contour[i], contour[i + 1]);
@@ -112,7 +108,7 @@ public class PlaceManager : IPlaceManager
             var angle = yx;
 
             CvInvoke.GetRotationMatrix2D(anchor, angle, 1, rotation);
-            CvInvoke.Transform(vector, vector, rotation);
+            // CvInvoke.Transform(vector, vector, rotation);
             fitted.Push(vector);
         }
 
