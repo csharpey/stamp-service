@@ -14,34 +14,23 @@ public class CmsFactory : IEnumerable<object[]>
     public IEnumerator<object[]> GetEnumerator()
     {
         var signs = Directory.GetFiles(AppContext.BaseDirectory, "*.sgn")
-            .GroupBy(s => Path.GetFileName(s).StartsWith("operator")).ToArray();
+            .Select(Path.GetFileName).ToArray();
 
-        var documents = Extensions.SelectMany(e => Directory.GetFiles(AppContext.BaseDirectory, e))
-            .Where(s => !Path.GetFileName(s).StartsWith("stamped")).ToList();
+        var documents = Extensions.SelectMany(e => Directory.GetFiles(AppContext.BaseDirectory, e)).ToList();
 
         foreach (var doc in documents)
         {
             var info = new List<SignatureInfo>();
-            foreach (var (@operator, user) in signs.First().Zip(signs.Last()))
+            foreach (var s in signs)
             {
                 {
-                    var sign = new FileStream(@operator, FileMode.Open);
+                    var sign = new FileStream(s, FileMode.Open);
 
                     var signedCms = new SignedCms();
                     var read = new StreamReader(sign).ReadToEnd();
                     signedCms.Decode(Convert.FromBase64String(read));
                     info.Add(new SignatureInfo(signedCms));
                 }
-
-                {
-                    var sign = new FileStream(user, FileMode.Open);
-
-                    var signedCms = new SignedCms();
-                    var read = new StreamReader(sign).ReadToEnd();
-                    signedCms.Decode(Convert.FromBase64String(read));
-                    info.Add(new SignatureInfo(signedCms));
-                }
-
             }
             yield return new object[] { doc, info.ToArray() };
         }

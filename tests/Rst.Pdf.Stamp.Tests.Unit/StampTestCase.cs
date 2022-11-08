@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Rst.Pdf.Stamp;
 using Xunit;
@@ -10,7 +11,7 @@ public class StampTestCase
 {
     [Theory]
     [ClassData(typeof(CmsFactory))]
-    public void TestStamp(string name)
+    public void TestStamp(string name, SignatureInfo[] infos)
     {
         Assert.True(File.Exists(name));
     }
