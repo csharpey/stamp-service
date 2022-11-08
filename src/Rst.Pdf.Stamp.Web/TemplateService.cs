@@ -59,7 +59,7 @@ public class TemplateService : ITemplateService
     {
         IView view;
 
-        view =  _templateFactory.FirstOrDefault(x => x.Path.Contains("Stamp"));
+        view = _templateFactory.FirstOrDefault(x => x.Path.Contains("Stamp"));
 
         var actionContext = new ActionContext(_accessor.HttpContext, new RouteData(), new ActionDescriptor());
 

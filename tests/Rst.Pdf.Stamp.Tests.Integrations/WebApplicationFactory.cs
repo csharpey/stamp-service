@@ -34,9 +34,9 @@ public class WebApplicationFactory : WebApplicationFactory<Startup>, IDisposable
             }
 
             // configurationBuilder.AddJsonFile(
-                // Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") is not null
-                    // ? "appsettings.Testing.Container.json"
-                    // : "appsettings.Testing.json", false);
+            // Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") is not null
+            // ? "appsettings.Testing.Container.json"
+            // : "appsettings.Testing.json", false);
 
             var config = configurationBuilder.Build();
             var c = new NpgsqlConnectionStringBuilder(config.GetConnectionString("Database"));

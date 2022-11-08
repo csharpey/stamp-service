@@ -27,7 +27,7 @@ public class SignatureService : ISignatureService
     {
         if (args.Signatures is not null)
             return Task.FromResult(Info(args.Signatures));
-            
+
         throw new InvalidOperationException();
     }
 
@@ -35,10 +35,10 @@ public class SignatureService : ISignatureService
     {
         if (args.Archive is not null)
             return Task.FromResult(Info(args.Archive));
-            
+
         if (args.Signatures is not null)
             return Task.FromResult(Info(args.Signatures));
-            
+
         throw new InvalidOperationException();
     }
 
@@ -57,7 +57,7 @@ public class SignatureService : ISignatureService
     {
         return Info(archive.OpenReadStream());
     }
-        
+
     private static IEnumerable<SignatureInfo> Info(Stream stream)
     {
         using var zip = new ZipArchive(stream, ZipArchiveMode.Read);

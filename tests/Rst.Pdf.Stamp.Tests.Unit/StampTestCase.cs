@@ -10,7 +10,7 @@ public class StampTestCase
 {
     [Theory]
     [ClassData(typeof(CmsFactory))]
-    public void TestStamp(string name,  SignatureInfo[] info)
+    public void TestStamp(string name)
     {
         Assert.True(File.Exists(name));
     }

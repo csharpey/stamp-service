@@ -38,7 +38,7 @@ internal static class Program
             builder.AppendFormat("Name: {0}", info.Name);
             builder.AppendFormat("SigningDate: {0}", info.SigningDate);
         }
-            
+
         Console.WriteLine(builder.ToString());
 
         await using var original = File.Open(originalFilename, FileMode.Open);
@@ -48,7 +48,7 @@ internal static class Program
     private static void CheckFile(string filename)
     {
         if (File.Exists(filename)) return;
-            
+
         Console.WriteLine($"The file '{filename}' does not exist");
         Environment.Exit(1);
     }

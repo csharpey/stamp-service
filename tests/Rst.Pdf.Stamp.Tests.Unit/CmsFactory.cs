@@ -15,7 +15,7 @@ public class CmsFactory : IEnumerable<object[]>
     {
         var signs = Directory.GetFiles(AppContext.BaseDirectory, "*.sgn")
             .GroupBy(s => Path.GetFileName(s).StartsWith("operator")).ToArray();
-            
+
         var documents = Extensions.SelectMany(e => Directory.GetFiles(AppContext.BaseDirectory, e))
             .Where(s => !Path.GetFileName(s).StartsWith("stamped")).ToList();
 
@@ -26,7 +26,7 @@ public class CmsFactory : IEnumerable<object[]>
             {
                 {
                     var sign = new FileStream(@operator, FileMode.Open);
-            
+
                     var signedCms = new SignedCms();
                     var read = new StreamReader(sign).ReadToEnd();
                     signedCms.Decode(Convert.FromBase64String(read));
@@ -35,13 +35,13 @@ public class CmsFactory : IEnumerable<object[]>
 
                 {
                     var sign = new FileStream(user, FileMode.Open);
-            
+
                     var signedCms = new SignedCms();
                     var read = new StreamReader(sign).ReadToEnd();
                     signedCms.Decode(Convert.FromBase64String(read));
                     info.Add(new SignatureInfo(signedCms));
                 }
-                    
+
             }
             yield return new object[] { doc, info.ToArray() };
         }

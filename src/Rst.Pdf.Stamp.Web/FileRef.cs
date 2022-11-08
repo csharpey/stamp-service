@@ -12,7 +12,7 @@ public class FileRef : IValidatableObject
 {
     [Required]
     public string Bucket { get; set; }
-        
+
     [Required]
     public string Key { get; set; }
 
@@ -28,19 +28,19 @@ public class FileRef : IValidatableObject
             yield return new ValidationResult("Bucket not found", new[] { nameof(Bucket) });
             yield break;
         }
-            
+
         var response = client.GetObjectMetadataAsync(Bucket, Key)
             .GetAwaiter().GetResult();
-                
+
         if (response.HttpStatusCode == HttpStatusCode.NotFound)
         {
-            yield return new ValidationResult("File not found", new []{ nameof(Key) });
+            yield return new ValidationResult("File not found", new[] { nameof(Key) });
             yield break;
         }
-            
+
         if (response.Headers.ContentType != MediaTypeNames.Application.Zip)
         {
-            yield return new ValidationResult("File must be zip", new []{ nameof(Key) });
+            yield return new ValidationResult("File must be zip", new[] { nameof(Key) });
         }
     }
 

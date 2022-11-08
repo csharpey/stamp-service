@@ -143,7 +143,7 @@ public class StampsController : ControllerBase
         return File(stream, contentType, newFileName);
     }
 
-        
+
     [FeatureGate(FeatureFlags.S3)]
     [HttpPost("[action]")]
     [Produces(MediaTypeNames.Application.Pdf)]

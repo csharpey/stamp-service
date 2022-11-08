@@ -11,14 +11,14 @@ namespace Rst.Pdf.Stamp.Web;
 public class StampArgs : IValidatableObject
 {
     public IFormFile Archive { get; set; }
-        
+
     [FromForm(Name = "sig")]
     public IFormFileCollection Signatures { get; set; }
-        
+
     [Required]
     [FromForm(Name = "file")]
     public IFormFileCollection Files { get; set; }
-        
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (Archive is not null && Signatures is not null)
@@ -48,7 +48,7 @@ public class PreviewArgs : IValidatableObject
 {
     [Required] public IFormFile File { get; set; }
 
-    [Required] [FromForm(Name = "sig")] public IFormFileCollection Signatures { get; set; }
+    [Required][FromForm(Name = "sig")] public IFormFileCollection Signatures { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

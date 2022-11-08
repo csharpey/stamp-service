@@ -10,8 +10,8 @@ public class CustomBorder : IPdfPTableEvent
         cb.Rectangle(
             0.1f,
             0.1f,
-            table.TotalWidth-0.2f,
-            table.TotalHeight-0.2f
+            table.TotalWidth - 0.2f,
+            table.TotalHeight - 0.2f
         );
         cb.SetLineWidth(0.3f);
         cb.Stroke();
