@@ -21,7 +21,7 @@ services:
       - 'minio_data:/data'
       
   backend:
-    image: ghcr.io/csharpey/stamping-servise
+    image: ghcr.io/csharpey/stamping-service
     build:
       context: .
     environment:

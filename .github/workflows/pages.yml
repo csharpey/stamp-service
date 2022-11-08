@@ -19,6 +19,7 @@ concurrency:
 
 jobs:
   doc:
+    name: Deploy documentation
     container: mono:latest
     environment:
       name: github-pages

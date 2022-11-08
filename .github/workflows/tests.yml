@@ -8,21 +8,25 @@ on:
 
 jobs:
   unit-tests:
+    name: Unit tests
     runs-on: ubuntu-latest
     container: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - uses: actions/checkout@v3
+      - name: Create Nuget config
+        run: dotnet new nugetconfig
       - name: Setup Github Nuget registry
         run: dotnet nuget add source -u ${GITHUB_ACTOR} -p ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text -n github "https://nuget.pkg.github.com/${GITHUB_REPOSITORY_OWNER}/index.json"
+      - name: Install poppler
+        run: apt update && apt install poppler-utils -y
       - name: Install tools
         run: dotnet tool restore
       - name: Install dependencies
         run: dotnet restore
       - name: Test
         run: dotnet test --filter TestCategory=Unit
-        env:
-          LD_LIBRARY_PATH: runtimes/ubuntu.20.04-x64/native
   integration-tests:
+    name: Integration tests
     runs-on: ubuntu-latest
     services:
       redis:
@@ -32,13 +36,15 @@ jobs:
     container: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - uses: actions/checkout@v3
+      - name: Create Nuget config
+        run: dotnet new nugetconfig
       - name: Setup Github Nuget registry
         run: dotnet nuget add source -u ${GITHUB_ACTOR} -p ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text -n github "https://nuget.pkg.github.com/${GITHUB_REPOSITORY_OWNER}/index.json"
+      - name: Install poppler
+        run: apt update && apt install poppler-utils -y
       - name: Install tools
         run: dotnet tool restore
       - name: Install dependencies
         run: dotnet restore 
       - name: Test
         run: dotnet test --filter TestCategory=Integration
-        env:
-          LD_LIBRARY_PATH: runtimes/ubuntu.20.04-x64/native

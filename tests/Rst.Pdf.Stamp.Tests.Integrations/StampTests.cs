@@ -29,4 +29,5 @@ public class StampTests : IClassFixture<WebApplicationFactory>
 
         Assert.NotNull(client);
     }
+    
 }

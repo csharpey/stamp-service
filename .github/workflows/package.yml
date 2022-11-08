@@ -1,4 +1,4 @@
-name: Package
+name: Packaging
 
 on:
   push:
@@ -9,10 +9,13 @@ on:
 
 jobs:
   build:
+    name: Build api package
     container: mcr.microsoft.com/dotnet/sdk:6.0
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Create Nuget config
+        run: dotnet new nugetconfig
       - name: Setup Github Nuget registry
         run: dotnet nuget add source -u ${GITHUB_ACTOR} -p ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text -n github "https://nuget.pkg.github.com/${GITHUB_REPOSITORY_OWNER}/index.json"
       - name: Install dependencies
