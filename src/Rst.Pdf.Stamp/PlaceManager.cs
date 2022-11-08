@@ -94,7 +94,7 @@ public class PlaceManager : IPlaceManager
     {
         var fitted = new VectorOfPoint();
 
-        for (int i = 0; i < contour.Size - 1; i++)
+        for (int i = 0; i < 5; i++)
         {
             var rotation = new Mat();
             var line = new LineSegment2D(contour[i], contour[i + 1]);
@@ -102,9 +102,16 @@ public class PlaceManager : IPlaceManager
 
             var ax = line.GetExteriorAngleDegree(XAxis);
             var yx = line.GetExteriorAngleDegree(YAxis);
-            var angle = Math.Abs(ax) > 45 ? -yx : ax;
+            yx %= 90;
+            ax %= 90;
 
-            CvInvoke.GetRotationMatrix2D(new PointF(0, 0), angle, 1, rotation);
+            ax *= Math.Sign(ax);
+            yx *= Math.Sign(yx);
+            var center = line.P1 + (new Size(line.P2) - new Size(line.P1)) / 2;
+            var anchor = new PointF(center.X, center.Y);
+            var angle = yx;
+
+            CvInvoke.GetRotationMatrix2D(anchor, angle, 1, rotation);
             CvInvoke.Transform(vector, vector, rotation);
             fitted.Push(vector);
         }
