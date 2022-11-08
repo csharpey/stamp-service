@@ -1,11 +1,11 @@
 name: Tests
 
-#on:
-#  push:
-#    branches: ["*"]
-#  paths:
-#    - src/**/*
-#    - tests/**/*
+on:
+  push:
+    paths:
+      - src/**/*
+      - tests/**/*
+      - NuGet.config
 
 jobs:
   unit-tests:
@@ -13,10 +13,12 @@ jobs:
     container: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - uses: actions/checkout@v3
+      - name: Setup Github Nuget registry
+        run: dotnet nuget add source -u ${GITHUB_ACTOR} -p ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text -n github "https://nuget.pkg.github.com/${GITHUB_REPOSITORY_OWNER}/index.json"
       - name: Install tools
         run: dotnet tool restore
       - name: Install dependencies
-        run: dotnet restore --configfile NuGet.config
+        run: dotnet restore
       - name: Test
         run: dotnet test --filter TestCategory=Unit
   integration-tests:
@@ -29,9 +31,11 @@ jobs:
     container: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - uses: actions/checkout@v3
+      - name: Setup Github Nuget registry
+        run: dotnet nuget add source -u ${GITHUB_ACTOR} -p ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text -n github "https://nuget.pkg.github.com/${GITHUB_REPOSITORY_OWNER}/index.json"
       - name: Install tools
         run: dotnet tool restore
       - name: Install dependencies
-        run: dotnet restore --configfile NuGet.config
+        run: dotnet restore 
       - name: Test
         run: dotnet test --filter TestCategory=Integration

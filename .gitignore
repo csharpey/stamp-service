@@ -45,3 +45,4 @@ src/Web/*AppLog*.txt
 *.docx
 
 swagger.*
+NuGet.config

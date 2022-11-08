@@ -2,9 +2,10 @@ name: Package
 
 on:
   push:
-    branches: ["*"]
-  paths:
-    - libs/**/*
+    branches:
+      - '*'
+    paths:
+      - libs/**/*
 
 jobs:
   build:
@@ -12,8 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Setup Github Nuget registry
+        run: dotnet nuget add source -u ${GITHUB_ACTOR} -p ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text -n github "https://nuget.pkg.github.com/${GITHUB_REPOSITORY_OWNER}/index.json"
       - name: Install dependencies
-        run: dotnet restore --configfile NuGet.config
+        run: dotnet restore
       - name: Build
         run: dotnet pack --configuration Release
       - name: Publish

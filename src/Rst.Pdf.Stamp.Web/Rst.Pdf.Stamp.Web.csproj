@@ -58,10 +58,12 @@
             <DependentUpon>Stamp.resx</DependentUpon>
         </Compile>
     </ItemGroup>
+    
     <Target Name="OpenAPI" AfterTargets="Build">
         <Exec Command="dotnet swagger tofile --output swagger.yaml --yaml $(MSBuildThisFileDirectory)$(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
         <Exec Command="dotnet swagger tofile --output swagger.json $(MSBuildThisFileDirectory)$(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
     </Target>
+    
     <Target Name="CopyOpenAPI" AfterTargets="OpenAPI">
         <ItemGroup>
             <SwaggerSchemas Include="$(ProjectDir)swagger.*" />
@@ -87,4 +89,5 @@
         <OpenApiGenerateCodeOnBuild>true</OpenApiGenerateCodeOnBuild>
         <OpenApiGenerateCodeAtDesignTime>true</OpenApiGenerateCodeAtDesignTime>
     </PropertyGroup>
+    
 </Project>
