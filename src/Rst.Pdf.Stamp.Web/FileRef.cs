@@ -21,7 +21,7 @@ public class FileRef : IValidatableObject
         var client = validationContext.GetRequiredService<AmazonS3Client>();
 
         var bucket = client.ListBucketsAsync().GetAwaiter().GetResult()
-            .Buckets.Find(b => b.BucketName.Equals(Bucket));
+            .Buckets.Find(b => b.BucketName.Equals(Bucket, StringComparison.Ordinal));
 
         if (bucket is null)
         {

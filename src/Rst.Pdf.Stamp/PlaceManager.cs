@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -20,8 +21,8 @@ public class PlaceManager : IPlaceManager
     private readonly ILogger<IPlaceManager> _logger;
 
     private const int DilationIteration = 2;
-    private static readonly LineSegment2D YAxis = new(Point.Empty, new Point(0, 1));
-    private static readonly LineSegment2D XAxis = new(Point.Empty, new Point(1, 0));
+    private static readonly LineSegment2DF YAxis = new(PointF.Empty, new PointF(0, 1));
+    private static readonly LineSegment2DF XAxis = new(PointF.Empty, new PointF(1, 0));
 
     public PlaceManager(ILogger<PlaceManager> logger)
     {
@@ -90,25 +91,27 @@ public class PlaceManager : IPlaceManager
     {
         var fitted = new VectorOfPoint();
 
-        for (int i = 0; i < contour.Size - 1; i++)
+        var size = contour.Size - 1;
+        size = 5;
+        for (int i = 0; i < size; i++)
         {
             var rotation = new Mat();
-            var line = new LineSegment2D(contour[i], contour[i + 1]);
-            var vector = new VectorOfPoint(new[] { line.P1, line.P2 });
+            var line = new LineSegment2DF(contour[i], contour[i + 1]);
+            var vector = new VectorOfPoint(new[] { contour[i], contour[i + 1] });
 
             var ax = line.GetExteriorAngleDegree(XAxis);
             var yx = line.GetExteriorAngleDegree(YAxis);
-            yx %= 90;
-            ax %= 90;
 
+            ax %= 90;
+            yx %= 90;
             ax *= Math.Sign(ax);
             yx *= Math.Sign(yx);
-            var center = line.P1 + (new Size(line.P2) - new Size(line.P1)) / 2;
-            var anchor = new PointF(center.X, center.Y);
-            var angle = yx;
+            
+            var anchor = (PointF)((Vector2)line.P1 + (Vector2)line.P2 / 2);
+            var angle = Math.Abs(yx) > 45 ? ax : yx;
 
             CvInvoke.GetRotationMatrix2D(anchor, angle, 1, rotation);
-            // CvInvoke.Transform(vector, vector, rotation);
+            CvInvoke.Transform(vector, vector, rotation);
             fitted.Push(vector);
         }
 
