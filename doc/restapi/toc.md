@@ -1,0 +1,1 @@
+# [Stamping service API](swagger.json)

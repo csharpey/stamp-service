@@ -4,6 +4,19 @@
         <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Content Include="restapi\swagger.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Include="_site\restapi\swagger.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+    </ItemGroup>
+
     <Target Name="CheckMono">
         <Exec ConsoleToMSBuild="true" IgnoreExitCode="true" Command="where mono" Condition="'$(OS)' == 'Windows_NT'">
             <Output TaskParameter="ConsoleOutput" ItemName="OutputOfExec" />
