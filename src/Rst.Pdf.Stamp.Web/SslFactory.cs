@@ -34,7 +34,7 @@ public sealed class SslFactory : HttpClientFactory
         return httpClient;
     }
 
-    private HttpClientHandler CreateClientHandler() =>
+    private static HttpClientHandler CreateClientHandler() =>
         new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true

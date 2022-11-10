@@ -27,6 +27,7 @@ using Microsoft.OpenApi.Models;
 using Rst.Pdf.Stamp.Web.Extensions;
 using Rst.Pdf.Stamp.Web.Interfaces;
 using Rst.Pdf.Stamp.Web.Options;
+using Rst.Pdf.Stamp.Web.Services;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace Rst.Pdf.Stamp.Web;
@@ -107,7 +108,7 @@ public class Startup
                             Id = JwtBearerDefaults.AuthenticationScheme
                         }
                     },
-                    new string[] { }
+                    Array.Empty<string>()
                 }
             });
             var xmlCommentsFullPath = Path.Combine(
@@ -128,7 +129,7 @@ public class Startup
         services.Configure<BucketOptions>(options =>
         {
             options.Public = "public-bucket";
-            options.Stamped = nameof(BucketOptions.Stamped).ToLower();
+            options.Stamped = nameof(BucketOptions.Stamped).ToLower(CultureInfo.CurrentCulture);
         });
 
         services.AddHttpLogging(logging =>

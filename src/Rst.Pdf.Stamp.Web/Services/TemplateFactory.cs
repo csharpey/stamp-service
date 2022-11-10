@@ -1,20 +1,14 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using IdentityModel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
-using Microsoft.AspNetCore.Routing;
 using Rst.Pdf.Stamp.Web.Interfaces;
 
-namespace Rst.Pdf.Stamp.Web;
+namespace Rst.Pdf.Stamp.Web.Services;
 
 public class TemplateFactory : ITemplateFactory
 {

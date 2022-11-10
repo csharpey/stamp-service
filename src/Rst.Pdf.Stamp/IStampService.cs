@@ -8,6 +8,6 @@ namespace Rst.Pdf.Stamp;
 
 public interface IStampService
 {
-    public Task<Stream> AddStamp(Stream input, IReadOnlyCollection<SignatureInfo> signatures, IView template,
+    public Task<Stream> AddStampAsync(Stream input, IReadOnlyCollection<SignatureInfo> signatures, IView template,
         CancellationToken cancellationToken);
 }

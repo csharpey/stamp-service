@@ -1,0 +1,7 @@
+poppler-utils
+libgeotiff-dev
+libusb-dev libx11-dev
+libxt-dev
+libopengl-dev
+libglx-dev
+libusb-1.0-0

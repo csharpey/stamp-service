@@ -67,6 +67,8 @@ public class PlaceManager : IPlaceManager
         CvInvoke.DrawContours(debug, approximatedContours, -1, color, thickness);
         debug.Save("debug.png");
 #endif
+        
+        
         return new FreeSpaceMap();
     }
 
@@ -102,8 +104,6 @@ public class PlaceManager : IPlaceManager
             var ax = line.GetExteriorAngleDegree(XAxis);
             var yx = line.GetExteriorAngleDegree(YAxis);
 
-            ax %= 90;
-            yx %= 90;
             ax *= Math.Sign(ax);
             yx *= Math.Sign(yx);
             

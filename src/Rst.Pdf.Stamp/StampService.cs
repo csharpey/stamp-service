@@ -34,7 +34,7 @@ public class StampService : IStampService
         _converter = converter;
     }
 
-    public async Task<Stream> AddStamp(Stream input, IReadOnlyCollection<SignatureInfo> signatures, IView template,
+    public async Task<Stream> AddStampAsync(Stream input, IReadOnlyCollection<SignatureInfo> signatures, IView template,
         CancellationToken cancellationToken)
     {
         var stream = new MemoryStream();

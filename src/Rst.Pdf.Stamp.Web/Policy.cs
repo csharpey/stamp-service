@@ -1,6 +1,6 @@
 namespace Rst.Pdf.Stamp.Web;
 
-public class Policy
+public static class Policy
 {
     /// <summary>
     /// Adjacent subsystems requests

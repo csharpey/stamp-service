@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography.Pkcs;
-using System.Threading.Tasks;
 using Amazon.S3;
-using Microsoft.AspNetCore.Http;
 using Rst.Pdf.Stamp.Web.Interfaces;
+using Rst.Pdf.Stamp.Web.Models;
 
-namespace Rst.Pdf.Stamp.Web;
+namespace Rst.Pdf.Stamp.Web.Services;
 
 public class SignatureService : ISignatureService
 {
@@ -18,12 +14,14 @@ public class SignatureService : ISignatureService
     {
         _client = client;
     }
-    public async Task<IEnumerable<SignatureInfo>> Info(FileRef arg)
+
+    public async Task<IEnumerable<SignatureInfo>> InfoAsync(FileRef arg)
     {
         var obj = await _client.GetObjectAsync(arg.Bucket, arg.Key);
         return Info(obj.ResponseStream);
     }
-    public Task<IEnumerable<SignatureInfo>> Info(PreviewArgs args)
+
+    public Task<IEnumerable<SignatureInfo>> InfoAsync(PreviewArgs args)
     {
         if (args.Signatures is not null)
             return Task.FromResult(Info(args.Signatures));
@@ -31,7 +29,7 @@ public class SignatureService : ISignatureService
         throw new InvalidOperationException();
     }
 
-    public Task<IEnumerable<SignatureInfo>> Info(StampArgs args)
+    public Task<IEnumerable<SignatureInfo>> InfoAsync(StampArgs args)
     {
         if (args.Archive is not null)
             return Task.FromResult(Info(args.Archive));
@@ -42,18 +40,19 @@ public class SignatureService : ISignatureService
         throw new InvalidOperationException();
     }
 
-    private IEnumerable<SignatureInfo> Info(IFormFileCollection signatures)
+    private static IEnumerable<SignatureInfo> Info(IFormFileCollection signatures)
     {
         foreach (var sig in signatures)
         {
-            var read = new StreamReader(sig.OpenReadStream()).ReadToEnd();
+            using var reader = new StreamReader(sig.OpenReadStream());
+            var read = reader.ReadToEnd();
             var signedCms = new SignedCms();
             signedCms.Decode(Convert.FromBase64String(read));
             yield return new SignatureInfo(signedCms);
         }
     }
 
-    private IEnumerable<SignatureInfo> Info(IFormFile archive)
+    private static IEnumerable<SignatureInfo> Info(IFormFile archive)
     {
         return Info(archive.OpenReadStream());
     }
@@ -65,7 +64,8 @@ public class SignatureService : ISignatureService
 
         foreach (var sig in document.GetSignatures())
         {
-            var read = new StreamReader(sig).ReadToEnd();
+            using var reader = new StreamReader(sig);
+            var read = reader.ReadToEnd();
             var signedCms = new SignedCms();
             signedCms.Decode(Convert.FromBase64String(read));
             yield return new SignatureInfo(signedCms);

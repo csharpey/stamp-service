@@ -1,19 +1,12 @@
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Options;
 using Rst.Pdf.Stamp.Web.Interfaces;
-using Rst.Pdf.Stamp.Web.Options;
 
-namespace Rst.Pdf.Stamp.Web;
+namespace Rst.Pdf.Stamp.Web.Services;
 
 public class TemplateService : ITemplateService
 {
@@ -55,11 +48,11 @@ public class TemplateService : ITemplateService
         return PreMailer.Net.PreMailer.MoveCssInline(sw.ToString(), true).Html;
     }
 
-    public async Task<string> RenderToString(SignatureInfo model)
+    public async Task<string> RenderToString(SignatureInfo signature)
     {
         IView view;
 
-        view = _templateFactory.FirstOrDefault(x => x.Path.Contains("Stamp"));
+        view = _templateFactory.FirstOrDefault(x => x.Path.Contains("Stamp", StringComparison.Ordinal));
 
         var actionContext = new ActionContext(_accessor.HttpContext, new RouteData(), new ActionDescriptor());
 
@@ -68,7 +61,7 @@ public class TemplateService : ITemplateService
         var viewDictionary =
             new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
             {
-                Model = model
+                Model = signature
             };
 
         var viewContext = new ViewContext(

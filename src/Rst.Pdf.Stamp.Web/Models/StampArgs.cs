@@ -1,12 +1,9 @@
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using iTextSharp.text.exceptions;
 using iTextSharp.text.pdf;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Rst.Pdf.Stamp.Web;
+namespace Rst.Pdf.Stamp.Web.Models;
 
 public class StampArgs : IValidatableObject
 {
@@ -32,7 +29,7 @@ public class StampArgs : IValidatableObject
             string message;
             try
             {
-                new PdfReader(file.OpenReadStream());
+                var _ = new PdfReader(file.OpenReadStream());
                 continue;
             }
             catch (InvalidPdfException e)
@@ -40,22 +37,6 @@ public class StampArgs : IValidatableObject
                 message = e.Message;
             }
             yield return new ValidationResult(message, new[] { nameof(Files) });
-        }
-    }
-}
-
-public class PreviewArgs : IValidatableObject
-{
-    [Required] public IFormFile File { get; set; }
-
-    [Required][FromForm(Name = "sig")] public IFormFileCollection Signatures { get; set; }
-
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        if (!Signatures.Any())
-        {
-            var message = $"{nameof(Signatures)} could not be empty";
-            yield return new ValidationResult(message, new[] { nameof(Signatures) });
         }
     }
 }

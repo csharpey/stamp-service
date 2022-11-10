@@ -1,12 +1,10 @@
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Mime;
 using Amazon.S3;
 using Amazon.S3.Model;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Rst.Pdf.Stamp.Web;
+namespace Rst.Pdf.Stamp.Web.Models;
 
 public class FileRef : IValidatableObject
 {
