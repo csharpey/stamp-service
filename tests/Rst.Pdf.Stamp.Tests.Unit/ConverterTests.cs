@@ -7,6 +7,8 @@ using Amazon.Runtime.Internal.Util;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Rst.Pdf.Stamp;
+using Rst.Pdf.Stamp.Interfaces;
+using Rst.Pdf.Stamp.Services;
 using Xunit;
 
 namespace Rst.Pdf.Stamp.Tests.Unit;

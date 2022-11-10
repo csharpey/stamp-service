@@ -30,9 +30,6 @@
           "toc.yml",
           "*.md"
         ]
-      },
-      {
-        "files": [  "restapi/**" ]
       }
     ],
     "resource": [

@@ -24,6 +24,8 @@ using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
+using Rst.Pdf.Stamp.Interfaces;
+using Rst.Pdf.Stamp.Services;
 using Rst.Pdf.Stamp.Web.Extensions;
 using Rst.Pdf.Stamp.Web.Interfaces;
 using Rst.Pdf.Stamp.Web.Options;

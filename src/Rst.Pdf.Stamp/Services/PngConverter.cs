@@ -3,8 +3,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Rst.Pdf.Stamp.Interfaces;
 
-namespace Rst.Pdf.Stamp;
+namespace Rst.Pdf.Stamp.Services;
 
 public class PngConverter : IPdfConverter
 {

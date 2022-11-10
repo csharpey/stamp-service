@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rst.Pdf.Stamp.Interfaces;
 using Rst.Pdf.Stamp.Web.Interfaces;
 
 namespace Rst.Pdf.Stamp.Web.Services;

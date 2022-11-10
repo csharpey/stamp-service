@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
+using Rst.Pdf.Stamp.Interfaces;
 using Rst.Pdf.Stamp.Web.Interfaces;
 using Rst.Pdf.Stamp.Web.Models;
 using Rst.Pdf.Stamp.Web.Options;

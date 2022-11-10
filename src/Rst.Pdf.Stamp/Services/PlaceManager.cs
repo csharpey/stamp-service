@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -13,39 +12,63 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using Microsoft.Extensions.Logging;
+using Rst.Pdf.Stamp.Interfaces;
 
-namespace Rst.Pdf.Stamp;
+namespace Rst.Pdf.Stamp.Services;
 
 public class PlaceManager : IPlaceManager
 {
     private readonly ILogger<IPlaceManager> _logger;
+    private readonly IPdfConverter _converter;
 
     private const int DilationIteration = 2;
     private static readonly LineSegment2DF YAxis = new(PointF.Empty, new PointF(0, 1));
     private static readonly LineSegment2DF XAxis = new(PointF.Empty, new PointF(1, 0));
 
-    public PlaceManager(ILogger<PlaceManager> logger)
+    public PlaceManager(ILogger<PlaceManager> logger, IPdfConverter converter)
     {
         _logger = logger;
+        _converter = converter;
     }
 
-    public async Task<FreeSpaceMap> FindEmpty(
-        Stream memoryStream,
-        IReadOnlyCollection<Rectangle> rectangles,
-        CancellationToken token)
+    public async Task<IReadOnlyCollection<Rectangle>> FreeSpace(Stream pngMemoryStream,
+        IReadOnlyCollection<Rectangle> rectangles, CancellationToken token)
     {
-        var b = new byte[memoryStream.Length];
-        var bytesCount = await memoryStream.ReadAsync(b, token);
-        Debug.Assert(bytesCount == memoryStream.Length);
+        var img = await CreateImage(pngMemoryStream, token);
+        var contours = await FindTextContours(img, token);
+#if DEBUG
+        var color = new MCvScalar(0);
+        const int thickness = 5;
+        var debug = img.Copy().Convert<Rgb, byte>();
+        // CvInvoke.DrawContours(debug, contours, -1, color, thickness);
+        foreach (var rectangle in rectangles)
+        {
+            CvInvoke.Rectangle(debug, rectangle, color, thickness);
+        }
+        CvInvoke.DrawContours(debug, contours, -1, color, thickness);
+        debug.Save("debug.png");
+#endif
+        return await Filter(img, contours, rectangles, token);
+    }
+
+    private static async Task<Image<Gray, byte>> CreateImage(Stream pdfMemoryStream, CancellationToken token)
+    {
+        var buffer = new byte[pdfMemoryStream.Length];
+        var bytesCount = await pdfMemoryStream.ReadAsync(buffer, token);
+        Debug.Assert(bytesCount == pdfMemoryStream.Length);
 
         var src = new Mat();
-        CvInvoke.Imdecode(b, ImreadModes.Grayscale, src);
+        CvInvoke.Imdecode(buffer, ImreadModes.Grayscale, src);
 
-        var img = src.ToImage<Gray, byte>()
+        return src.ToImage<Gray, byte>()
             .SmoothGaussian(5)
             .ThresholdBinaryInv(new Gray(250), new Gray(byte.MaxValue));
+    }
 
-        var dst = new Mat();
+    private static Task<VectorOfVectorOfPoint> FindTextContours(Image<Gray, byte> img,
+        CancellationToken token)
+    {
+        var hierarchy = new Mat();
         VectorOfVectorOfPoint contours = new();
 
         const int textSize = 50;
@@ -55,21 +78,22 @@ public class PlaceManager : IPlaceManager
 
         var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, size, anchor);
         CvInvoke.Dilate(img, imgCopy, kernel, anchor, DilationIteration, BorderType.Default, new MCvScalar(255));
-        CvInvoke.FindContours(imgCopy, contours, dst, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+        CvInvoke.FindContours(imgCopy, contours, hierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
 
-        var approximatedContours = ApproximatedContours(contours);
-#if DEBUG
-        var color = new MCvScalar(0);
-        const int thickness = 5;
+        return Task.FromResult(ApproximatedContours(contours));
+    }
 
-        var debug = src.ToImage<Rgb, byte>();
-        // CvInvoke.DrawContours(debug, contours, -1, color, thickness);
-        CvInvoke.DrawContours(debug, approximatedContours, -1, color, thickness);
-        debug.Save("debug.png");
-#endif
-        
-        
-        return new FreeSpaceMap();
+    private static async Task<IReadOnlyCollection<Rectangle>> Filter(Image<Gray, byte> img,
+        VectorOfVectorOfPoint contours,
+        IReadOnlyCollection<Rectangle> rectangles,
+        CancellationToken token)
+    {
+        foreach (var rectangle in rectangles)
+        {
+        }
+
+
+        return rectangles;
     }
 
     private static VectorOfVectorOfPoint ApproximatedContours(VectorOfVectorOfPoint contours)
@@ -94,7 +118,6 @@ public class PlaceManager : IPlaceManager
         var fitted = new VectorOfPoint();
 
         var size = contour.Size - 1;
-        size = 5;
         for (int i = 0; i < size; i++)
         {
             var rotation = new Mat();
@@ -104,14 +127,11 @@ public class PlaceManager : IPlaceManager
             var ax = line.GetExteriorAngleDegree(XAxis);
             var yx = line.GetExteriorAngleDegree(YAxis);
 
-            ax *= Math.Sign(ax);
-            yx *= Math.Sign(yx);
-            
-            var anchor = (PointF)((Vector2)line.P1 + (Vector2)line.P2 / 2);
+            var anchor = line.P1;
             var angle = Math.Abs(yx) > 45 ? ax : yx;
 
             CvInvoke.GetRotationMatrix2D(anchor, angle, 1, rotation);
-            CvInvoke.Transform(vector, vector, rotation);
+            // CvInvoke.Transform(vector, vector, rotation);
             fitted.Push(vector);
         }
 

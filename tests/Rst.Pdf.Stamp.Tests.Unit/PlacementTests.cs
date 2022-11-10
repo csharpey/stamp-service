@@ -1,12 +1,17 @@
 using System;
-using System.Drawing;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using iTextSharp.text;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Rst.Pdf.Stamp.Interfaces;
+using Rst.Pdf.Stamp.Services;
 using Xunit;
 using Xunit.Abstractions;
+using Rectangle = System.Drawing.Rectangle;
 
 namespace Rst.Pdf.Stamp.Tests.Unit;
 
@@ -19,7 +24,8 @@ public class PlacementTests
     public PlacementTests(ITestOutputHelper output)
     {
         _output = output;
-        _manager = new PlaceManager(new Mock<ILogger<PlaceManager>>().Object);
+        var converter = new PngConverter(new NullLogger<PngConverter>());
+        _manager = new PlaceManager(new Mock<ILogger<PlaceManager>>().Object, converter);
     }
 
     [Theory]
@@ -33,7 +39,15 @@ public class PlacementTests
         await using var stream = new FileStream(path, FileMode.Open);
 
         Assert.True(stream.CanRead);
-        await _manager.FindEmpty(stream, Array.Empty<Rectangle>(), source.Token);
-    }
 
+        var stamp = new Document(PageSize.A8.Rotate());
+        var rectangles = new List<Rectangle>
+        {
+            new(0, 0, (int)stamp.PageSize.Width, (int)stamp.PageSize.Height)
+        };
+
+        var free = await _manager.FreeSpace(stream, rectangles, source.Token);
+
+        Assert.NotEmpty(free);
+    }
 }

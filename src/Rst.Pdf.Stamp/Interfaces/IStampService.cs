@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 
-namespace Rst.Pdf.Stamp;
+namespace Rst.Pdf.Stamp.Interfaces;
 
 public interface IStampService
 {

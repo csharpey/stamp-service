@@ -1,6 +1,7 @@
 ## Development Build
 
 ```shell
+ln -s /lib/x86_64-linux-gnu/libdl.so.2 /lib/x86_64-linux-gnu/libdl.so
 dotnet dev-certs https
 dotnet tool restore
 dotnet restore

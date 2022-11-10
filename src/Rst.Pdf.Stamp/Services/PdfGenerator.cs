@@ -5,12 +5,13 @@ using iTextSharp.text;
 using iTextSharp.text.html;
 using iTextSharp.text.html.simpleparser;
 using iTextSharp.text.pdf;
+using Rst.Pdf.Stamp.Interfaces;
 
-namespace Rst.Pdf.Stamp;
+namespace Rst.Pdf.Stamp.Services;
 
 public class PdfGenerator : IPdfGenerator
 {
-    public MemoryStream FromHtml(List<string> html)
+    public MemoryStream FromHtml(IReadOnlyCollection<string> html)
     {
         FontFactory.Register("wwwroot/Roboto-Regular.ttf");
         var style = new StyleSheet();
@@ -30,7 +31,7 @@ public class PdfGenerator : IPdfGenerator
 
         for (int i = 0; i < html.Count; i++)
         {
-            StringReader strReader = new StringReader(html.ElementAt(i));
+            var strReader = new StringReader(html.ElementAt(i));
             var tables = HTMLWorker.ParseToList(strReader, style);
             var table = (PdfPTable)tables[0];
             table.TableEvent = new CustomBorder();
