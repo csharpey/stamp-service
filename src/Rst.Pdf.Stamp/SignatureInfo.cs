@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
@@ -42,8 +43,8 @@ public readonly struct SignatureInfo
         SigningDate.CopyFrom(attrs.First(a => a.Oid.Value == OidRecordHelper.SigningTime).Values[0]);
 
         Thumbprint = certificate.Thumbprint;
-        StartDateCertificate = certificate.NotBefore.ToString();
-        EndDateCertificate = certificate.NotAfter.ToString();
+        StartDateCertificate = certificate.NotBefore.ToString(CultureInfo.CurrentCulture);
+        EndDateCertificate = certificate.NotAfter.ToString(CultureInfo.CurrentCulture);
     }
 
     private static ILookup<string, string> ToLookup(DerSequence set)
